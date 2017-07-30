@@ -14,24 +14,79 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext 
 from django.shortcuts import render_to_response
 from rango.models import Experiment,FileDetail,MotifList,AlphaTable
+from simple_search import search_form_factory
+#from .forms import SearchForm
 #from rango.models import User,Details
-
 
 @login_required(login_url="login/")
 def home(request):
-    return render(request,"home.html")    
+    return render(request,"home.html") 
 
-class IndexView(TemplateView):
+def search(request):
+    print"hello"
+    result_list = []
+    if request.method == 'POST':
+        query = request.POST['query'].strip() 
+        if query:
+            # Run our Bing function to get the results list!
+            result_list = Experiment.objects.filter(experimentName=query)
+            #print result_list
+    return render(request, 'search.html', {'result_list': result_list})
+    
+'''   query = request.GET.get('q')
+        print query
+        if query:
+            exp = Experiment.objects.filter(experimentName=query)            
+            for exp in exp:
+                return render(request, 'index.html', exp.experimentName)
+        else:
+            print "here"
+            return Experiment.objects.all()
+     
+    
+
+
+def search(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = SearchForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            expn = Experiment.objects.get(experimentName = request.POST['exp'])
+            print expn
+            return HttpResponseRedirect('/index/')
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = SearchForm()
+
+    return render(request, 'search.html', {'form': form})
+
+    
+    form = SearchForm(request.GET or {})
+    if form.is_valid():
+        results = form.get_queryset()
+    else:
+        results = Experiment.objects.none()
+
+    return {
+        'form': form,
+        'results': results,
+    }
+    '''
+def IndexView(TemplateView):
     template_name = "index.html"
 
-class PlotView(TemplateView):
-    template_name = "plot.html"
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super(PlotView, self).get_context_data(**kwargs)
-        context['plot'] = plots.plotv()
-        return context
+def PlotView(request,expname):
+    
+        exp = Experiment.objects.get(experimentName = expname)
+        context={
+        'plot':plots.plotv(),
+        }
+        #context['plot'] = plots.plotv()
+        #motif = MotifList.objects.filter(experimentName = exp)
+        return render(request, 'plot.html', context)   
     
 class ClusterView2(TemplateView):
     template_name = "index2.html"
@@ -42,22 +97,22 @@ class ClusterView2(TemplateView):
         context['index'] = plots.ploth()
         return context
     
-def ClusterView(request):
+def ClusterView(request,expname):
         # Call the base implementation first to get a context
      #   context = super(VarianceView, self).get_context_data(**kwargs)
      #   context['variance'] = plots.plotm()
-        exp = Experiment.objects.get(experimentName = "exp1")
+        exp = Experiment.objects.get(experimentName = expname)
         #motif = MotifList.objects.filter(experimentName = exp)
         context={
         'exp':exp,
         }
         return render(request, 'index2.html', context)    
 
-def VarianceView(request):
+def VarianceView(request,expname):
         # Call the base implementation first to get a context
      #   context = super(VarianceView, self).get_context_data(**kwargs)
      #   context['variance'] = plots.plotm()
-        exp = Experiment.objects.get(experimentName = "exp1")
+        exp = Experiment.objects.get(experimentName = expname)
         motif = MotifList.objects.filter(experimentName = exp)
         context={
         'motif':motif,
