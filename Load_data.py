@@ -37,7 +37,7 @@ def populateMotifs():
     index =0
     for experiment in experiments:
         for i in range(len(motif)):            
-            MotifList.objects.create(MotifName = motif[i],experimentName = experiment,MotifId=i)
+            MotifList.objects.get_or_create(MotifName = motif[i],experimentName = experiment,MotifId=i)
             
     
     
@@ -45,7 +45,7 @@ def populateAlpha():
     file = FileDetail.objects.all()
     index =1
     alpha_value = []
-    alpha_values = np.zeros((2,300),np.float)
+    alpha_values = np.zeros((12,300),np.float)
     for file in file:
             link ='http://ms2lda.org/decomposition/api/batch_results/{}'.format(file.fileName)
             raw_data = urlopen(link).read()
@@ -61,7 +61,7 @@ def populateAlphaMatrix():
     file = FileDetail.objects.filter(experimentName = experiment)
     Motiflist = MotifList.objects.filter(experimentName = experiment)
     alpha_value = []
-    alpha_values = np.zeros((2,300),np.float)
+    alpha_values = np.zeros((12,300),np.float)
     
     
     

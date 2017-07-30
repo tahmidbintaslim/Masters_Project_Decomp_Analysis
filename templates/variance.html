@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{block.super}}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <h1>Alpha values t-test </h1>
+  
+</div>
+
+<!-- /.container -->
+
+
+<div style="border:2px solid black; border-style: solid; padding: 10px; margin-bottom: 10px;">
+    <h4>Principle component analysis</h4>
+    <table id="motif" class="table cell-border" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>motif</th>
+                <th>zscore,t-test,p-value</th>
+            </tr>
+        </thead>
+        
+        <tbody> 
+            {% for motif in motif %}
+            <tr>
+                
+                <td>
+                {{motif.MotifName}}  
+                </td>
+                <td>
+                {{motif.motif_score}} <br/> 
+                </td>  
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+        
+    </table>
+</div>
+
+
+
+<!-- /.container -->
+
+{% endblock %}
+
+

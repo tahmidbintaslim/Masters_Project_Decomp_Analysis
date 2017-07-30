@@ -110,7 +110,7 @@ for i, alp in enumerate(arr_t):
         t, p = ttest_ind(g1, g2, equal_var=False)
         m_score.append((i, zscore, t, p))
 
-#print m_score
+print m_score
 
 import scipy.cluster.hierarchy as hier
 import scipy.spatial.distance as dist
@@ -148,11 +148,11 @@ for rowData in orderedDataMatrix:
 	row += 1
 
 colHeaders = ["file1","file2","file3","file4","file5","file6","file7","file8","file9","file10","file11","file12"]    
-print 'var maxData = ' + str(np.amax(dataMatrix)) + ";"
-print 'var minData = ' + str(np.amin(dataMatrix)) + ";"
-print 'var data = ' + str(matrixOutput) + ";"
-print 'var cols = ' + str(colHeaders) + ";"
-print 'var rows = ' + str([x for x in orderedRowHeaders]) + ";"
+#print 'var maxData = ' + str(np.amax(dataMatrix)) + ";"
+#print 'var minData = ' + str(np.amin(dataMatrix)) + ";"
+#print 'var data = ' + str(matrixOutput) + ";"
+#print 'var cols = ' + str(colHeaders) + ";"
+#print 'var rows = ' + str([x for x in orderedRowHeaders]) + ";"
 
 
 # Plot the dendogram

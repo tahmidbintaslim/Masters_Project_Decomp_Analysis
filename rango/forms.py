@@ -9,15 +9,11 @@ class LoginForm(AuthenticationForm):
     password = forms.CharField(label="Password", max_length=30, 
                                widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'password'}))
     
-#class DataForm(forms.ModelForm):
- #    class Meta:
-        #model = User
-  #      model = Details
-   #     fields = ('user','exp','res_id','category')  
-    #username = forms.CharField(label='Username', max_length=30)
-    #exp = forms.CharField(label='exp', max_length=30)
-    #res = forms.CharField(label='res', max_length=30)
-    #cat = forms.CharField(label='cat', max_length=30)
+    
+class ExpForm(forms.Form):
+      exp_name = forms.CharField(label='experiment', max_length=30,
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'exp'}))
+        
         
         
 #class RegistrationForm(forms.Form):

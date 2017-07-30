@@ -31,6 +31,7 @@ urlpatterns = [
     #url(r'^index/$', views.IndexView.as_view(), name='index'),
     url(r'^admin/', admin.site.urls),
     url(r'', include('rango.urls',namespace="rango")),
+    #url(r'^expid/(?P<experiment_id>\w+)/$', views.expid, name='expid'),
     #url(r'^rango/', include('rango.urls')),
     #url(r'^rango/', include('rango.urls', namespace="rango")),
     #url(r'^$', RedirectView.as_view(url='/rango/')),

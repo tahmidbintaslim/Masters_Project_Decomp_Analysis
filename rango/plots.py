@@ -17,11 +17,15 @@ def plotv():
     exp = Experiment.objects.get(experimentName = "exp1")
     return exp.pca
 
-def ploth():
-    exp = Experiment.objects.get(experimentName = "exp1")
-    return exp.hclus
+#def ploth():
+#    exp = Experiment.objects.get(experimentName = "exp1")
+#    return exp.hclus
     
-    
+#def plotm():
+#    exp = Experiment.objects.get(experimentName = "exp1")
+#    return exp.alpha_variance, exp.motif_score
+
+
     
     
     
