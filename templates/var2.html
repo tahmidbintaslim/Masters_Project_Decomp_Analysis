@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{block.super}}
+<link rel="stylesheet" type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <h1>Alpha values t-test </h1>
+  
+</div>
+
+<!-- /.container -->
+
+
+<div style="border:2px solid black; border-style: solid; padding: 10px; margin-bottom: 10px;">
+    <h4>Principle component analysis</h4>
+    <table id="example">
+  <thead>
+    <tr><th class="motif_name">Name</th><th>t-test</th></tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+<script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"></script>
+  <script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
+  <script>
+  $("#example").dataTable(
+      {% for motif in motif %}
+      {{motif.MotifName}}
+      {% endfor %}
+  );
+  </script>
+
+</div>
+
+
+
+<!-- /.container -->
+
+{% endblock %}
+
+
+

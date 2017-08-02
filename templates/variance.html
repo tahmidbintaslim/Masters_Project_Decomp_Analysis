@@ -1,48 +1,60 @@
 {% extends "base.html" %}
-
 {% block head %}
 {{block.super}}
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<link rel="stylesheet" type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css">
 {% endblock %}
 
 {% block content %}
-
-<div class="container">
-  <h1>Alpha values t-test </h1>
-  
-</div>
+<body>
+    
 
 <!-- /.container -->
-
-
-<div style="border:2px solid black; border-style: solid; padding: 10px; margin-bottom: 10px;">
+    
+<div>   
     <h4>Principle component analysis</h4>
-    <table id="motif" class="table cell-border" cellspacing="0" width="100%">
+    <table id="motif" class="table">
         <thead>
             <tr>
                 <th>motif</th>
-                <th>zscore,t-test,p-value</th>
+                <th>zscore</th>
+                <th>t-value</th>
+                <th>p-value</th>
             </tr>
         </thead>
         
-        <tbody> 
+        <tbody>
             {% for motif in motif %}
-            <tr>
-                
+            <tr>                
                 <td>
                 {{motif.MotifName}}  
                 </td>
                 <td>
-                {{motif.motif_score}} <br/> 
-                </td>  
-                
+                {{motif.z_score}} <br/> 
+                </td>
+                <td>
+                {{motif.t_value}} <br/> 
+                </td> 
+                <td>
+                {{motif.p_value}} <br/> 
+                </td>
             </tr>
-            {% endfor %}
+          {% endfor %}  
         </tbody>
         
     </table>
-</div>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="text/javascript"  src=" https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript"  src="https://cdn.datatables.net/1.10.15/js/dataTables.bootstrap.min.js"></script>   
+<script type="text/javascript"  src=" https://cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
 
+<!--Export table button CSS-->
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.1/css/jquery.dataTables.min.css">
+  
+<script type="text/javascript">
+$('#motif').DataTable();
+</script>
+    </div>
 
 
 <!-- /.container -->

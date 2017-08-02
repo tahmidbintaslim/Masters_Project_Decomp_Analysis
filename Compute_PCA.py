@@ -61,7 +61,9 @@ if __name__ == '__main__':
     i =0        
     for motifs,score in zip(Motiflist,m_score):
     #     mscore_str = motifs.MotifName + " " + 
-            motifs.motif_score = m_score[i]
+            motifs.z_score = m_score[i][0]
+            motifs.t_value = m_score[i][1]
+            motifs.p_value = m_score[i][2]
             i +=1
             motifs.save()       
     #exp.motif_score = mscore

@@ -8,20 +8,22 @@
 </div>
 
 <div class="container">
+  {% if expname %}  
   <table class="table table-striped table-hover">
     <tr>
       <td>Motif-Variance</td>
-      <td><a class="btn btn-default" href="{% url 'rango:plotm' %}" role="button">View</a></td>
+      <td><a class="btn btn-default" href="/plotm/{{expname}}">View</a></td>
     </tr>  
     <tr>
       <td>PCA-plot</td>
-      <td><a class="btn btn-default" href="{% url 'rango:plotv' %}" role="button">View</a></td>
+      <td><a class="btn btn-default" href="/plotv/{{expname}}">View</a></td>
     </tr>
     <tr>
       <td>Hierarchical Cluster</td>
-      <td><a class="btn btn-default" href="{% url 'rango:ploth' %}" role="button">View</a></td>
+      <td><a class="btn btn-default" href="/ploth/{{expname}}">View</a></td>
     </tr>  
   </table>
+  {% endif %}  
 </div>
 <!-- /.container -->
 

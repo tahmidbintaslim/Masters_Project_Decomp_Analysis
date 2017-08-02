@@ -28,8 +28,9 @@ class MotifList(models.Model):
     MotifName = models.TextField()
     experimentName = models.ForeignKey(Experiment)
     MotifId = models.IntegerField(default=1)
-    motif_score= models.TextField(null=True)
-    #metadata = models.CharField(max_length=1024 * 1024, null=True)
+    z_score= models.FloatField(null=True)
+    t_value= models.FloatField(null=True)
+    p_value= models.FloatField(null=True)
     
     def __unicode__(self):
         return self.MotifName

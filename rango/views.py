@@ -23,6 +23,9 @@ def home(request):
     return render(request,"home.html") 
 
 def search(request):
+    result_list = Experiment.objects.all()
+    return render(request, 'search.html', {'result_list': result_list})
+'''    
     print"hello"
     result_list = []
     if request.method == 'POST':
@@ -31,9 +34,10 @@ def search(request):
             # Run our Bing function to get the results list!
             result_list = Experiment.objects.filter(experimentName=query)
             #print result_list
-    return render(request, 'search.html', {'result_list': result_list})
+            
     
-'''   query = request.GET.get('q')
+    
+   query = request.GET.get('q')
         print query
         if query:
             exp = Experiment.objects.filter(experimentName=query)            
@@ -75,8 +79,9 @@ def search(request):
         'results': results,
     }
     '''
-def IndexView(TemplateView):
-    template_name = "index.html"
+def IndexView(request,expname):
+    print expname
+    return render(request, 'index.html', {'expname': expname})
 
 def PlotView(request,expname):
     
