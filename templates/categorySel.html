@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+{{block.super}}
+    <style type="text/css">
+        
+        .select{
+            float: left;
+            width: 300px;
+            overflow: auto;
+            border: 1px silver solid;
+        } 
+        .select select{
+            border: none;
+            min-width: 300px;
+        }       
+        .arrow{
+            float:left;
+            margin:10px;
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+{%  block js_block %}
+<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+<script type='text/javascript' src='{% static "js/pair-select.min.js" %}'></script>
+<script>
+$(document).ready( function(){  
+$('#selectitem').pairMaster();    
+$('#g1Add').click(function(){    
+$('#selectitem').addSelected('#group1');
+});
+$('#g1Remove').click(function(){
+$('#group1').removeSelected('#selectitem');
+});
+$('#g2Add').click(function(){
+$('#selectitem').addSelected('#group2');
+});
+$('#btnGroup2Remove').click(function(){
+$('#group2').removeSelected('#selectitem');
+}); 
+});    
+</script>
+{% endblock %} 
+<!-- /.container -->
+{% block content %}  
+<form id="categoryform" method="post" action=".">
+        <div class="select">
+            <select name="group1" id="group1" multiple  size="30">
+            </select>
+        </div>
+
+        <div class="arrow">
+            <button type="button" id="g1Add"><</button><br>
+            <button type="button" id="g1Remove">></button>
+        </div>
+
+        <div class="select">
+            <select id="selectitem" multiple size="30">
+                {% for result in result_list %}
+                    <option value="{{result.fileName}}">{{result.fileName}} </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="arrow">
+            <button type="button" id="g2Add">></button><br>
+            <button type="button" id="g2Remove"><</button>
+        </div>
+
+        <div class="select">
+            <select name="group2" id="group2" multiple  size="30">
+            </select>
+        </div>
+
+        <div style="clear:both;margin-bottom:10px"></div>
+           
+    <input id="submit" type="submit" name="submit" value="Submit" class="btn btn-primary" onclick="#"/>
+            {% csrf_token %}
+    </form>
+               
+          
+<!-- /.container -->
+{% endblock %}
+
+
+
+

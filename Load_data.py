@@ -13,6 +13,7 @@ from urllib import urlopen
 from django.views.generic import TemplateView
 import simplejson as json
 import numpy as np
+import requests
 
 def populateExperiment():  
     import sys
@@ -82,9 +83,33 @@ def populateAlphaMatrix():
                 
                  i +=1
             index +=1
-            
+
+def loadAnnotation():
+    annotation = []
+    print "hello"
+    url ='http://ms2lda.org/decomposition/api/get_motifset_annotations/'
+    args = {'motifset':'massbank_motifset'}
+    response = requests.post(url,args)
+    #print response.json()
+    #raw_data = urlopen(link).read()
+    url = response.json()
+    url = url.get('annotations')
+    #print url
+    annotation = sorted(url, key=lambda k: k[0], reverse=False)
+    print len(annotation)
+    print annotation
+    motiflist = MotifList.objects.all()
+    for i in range(len(annotation)):
+        motiflist = MotifList.objects.all()
+        for motiflist in motiflist:            
+            if motiflist.MotifName[5:] == annotation[i][0]:
+                motiflist.Annotation = annotation[i][1]                  
+                motiflist.save()
+                
+   
 
 if __name__ == '__main__':
         print("Starting Rango population script...")
-        populateAlphaMatrix()               
+        #populateAlphaMatrix() 
+        loadAnnotation()
     

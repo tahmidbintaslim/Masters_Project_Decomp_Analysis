@@ -10,6 +10,10 @@ class LoginForm(AuthenticationForm):
     password = forms.CharField(label="Password", max_length=30, 
                                widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'password'}))
     
+
+class categoryform(forms.Form):
+    name = forms.CharField(widget=forms.TextInput(attrs={'style': 'width:300px'}))
+    description = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 80}))   
     
 #class ExpForm(forms.Form):
 #      exp_name = forms.CharField(label='experiment', max_length=30,

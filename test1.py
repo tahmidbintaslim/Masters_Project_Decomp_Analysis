@@ -97,8 +97,7 @@ for i in range(len(motif_list)):
                           showlegend = False,
                         )
                     )
-
-# plt.plot({'data':data})
+plt.plot({'data':data})
 
 m_score = []
 arr_t = np.transpose(alpha_values)

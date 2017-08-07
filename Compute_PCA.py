@@ -28,10 +28,8 @@ if __name__ == '__main__':
         i +=1
         new_alp_vals = []
         for av in alp_vals:
-            s = sum(av)
-            
-            nav = [a / s for a in av]
-            
+            s = sum(av)            
+            nav = [a / s for a in av]            
             new_alp_vals.append(nav)
         alp_vals = new_alp_vals 
       
@@ -90,24 +88,25 @@ if __name__ == '__main__':
      #   category_seq.append(str(files.category))  
     #category_seq = np.array(category_seq)
     motifs = MotifList.objects.filter(experimentName = ind_file[0])  
-    for lab in ('0', '1'):
+    for lab,names in zip(('0', '1'),('healthy','diagnose')):
          data.append(go.Scatter(
                         x = alpha_sklearn[category_seq==lab,0],
                         y = alpha_sklearn[category_seq==lab,1],
                         mode = 'markers',
+                        name = names, 
                         marker = dict(
                             size = 10,
                             ),
                     )
                 )
             
-    for i in range(len(motifs)):
-               motifs = MotifList.objects.filter(experimentName = exp) 
+    for i,motifs in zip(range(len(motifs)),motifs):
+               #motifs = MotifList.objects.filter(experimentName = exp) 
                data.append(
                     go.Scatter(
                         x = [0,5*sklearn_pca.components_[0,i]],
                         y = [0,5*sklearn_pca.components_[1,i]],
-                        name = [motifs.MotifName for motifs in motifs],
+                        name = motifs.MotifName,
                         mode = 'lines',
                         line = dict(
                             color = ('rgba(200,0,0,0.1)'),

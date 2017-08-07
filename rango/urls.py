@@ -3,7 +3,8 @@ from . import views
 
 urlpatterns =[
       url(r'^register/$', views.register_page), 
-      url(r'^search/$', views.search, name='search'),      
+      url(r'^search/$', views.search, name='search'),  
+      url(r'^categorySel/(?P<expname>[\w\-]+)/$', views.categorySel, name='categorySel'),
       url(r'^index/(?P<expname>[\w\-]+)/$', views.IndexView, name='index'),
       url(r'^$', views.home, name='home'),
       url(r'^plotv/(?P<expname>[\w\-]+)/$', views.PlotView, name='plotv'),

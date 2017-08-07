@@ -28,6 +28,7 @@ class MotifList(models.Model):
     MotifName = models.TextField()
     experimentName = models.ForeignKey(Experiment)
     MotifId = models.IntegerField(default=1)
+    Annotation = models.TextField(null=True) 
     z_score= models.FloatField(null=True)
     t_value= models.FloatField(null=True)
     p_value= models.FloatField(null=True)
