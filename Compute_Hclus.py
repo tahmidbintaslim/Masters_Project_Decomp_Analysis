@@ -33,10 +33,8 @@ if __name__ == '__main__':
         new_alp_vals = []
         for av in alp_vals:
             s = sum(av)
-            nav = [a / s for a in av]
-            
-            new_alp_vals.append(nav)
-            
+            nav = [a / s for a in av]            
+            new_alp_vals.append(nav)            
         alp_vals = new_alp_vals 
       
     alpha_values = np.array(alp_vals)
@@ -50,6 +48,7 @@ if __name__ == '__main__':
     
     
 #------D3 Dendrogram------#
+    print alpha_values.shape
     dataMatrix = np.array(alpha_values.T)
     distMat = scipy.spatial.distance.pdist( dataMatrix )
 
@@ -107,7 +106,6 @@ if __name__ == '__main__':
         return leafNames
 
     label_tree( d3Dendro["children"][0] )
-
 # Output to JSON
     json.dump(d3Dendro, open("d3-dendrogram.json", "w"), sort_keys=True, indent=4)
     exp.hclus = open("d3-dendrogram.json", "r")
@@ -117,4 +115,5 @@ if __name__ == '__main__':
     
     #hclus_div = plot(dendro,output_type='div', include_plotlyjs=False)
     #exp.hclus = hclus_div
-    exp.save()
+    exp.save()   
+    

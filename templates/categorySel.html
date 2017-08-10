@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
 {% block head %}
-{{block.super}}
+
     <style type="text/css">
         
         .select{
             float: left;
             width: 300px;
             overflow: auto;
+            margin-left: 20px; 
             border: 1px silver solid;
         } 
         .select select{
@@ -16,8 +17,9 @@
         }       
         .arrow{
             float:left;
-            margin:10px;
-            margin-top: 10px;
+            margin:20px;
+            margin-top: 120px;
+            margin-left: 20px; 
         }
     </style>
 {% endblock %}
@@ -25,6 +27,24 @@
 <script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
 <script type='text/javascript' src='{% static "js/pair-select.min.js" %}'></script>
+<script type="text/javascript">
+        function validate()
+        {
+
+            if (document.getElementById("group1").options.length == 0 || document.getElementById("group2").options.length == 0)
+            {
+                var html_to_insert = "*Required fields are empty";
+                document.getElementById("errors").innerHTML = html_to_insert;
+                return false;
+            }
+            else
+            {
+                document.getElementById("errors").innerHTML = "";
+            }
+            return true;
+        }
+    </script>
+
 <script>
 $(document).ready( function(){  
 $('#selectitem').pairMaster();    
@@ -44,10 +64,21 @@ $('#group2').removeSelected('#selectitem');
 </script>
 {% endblock %} 
 <!-- /.container -->
-{% block content %}  
-<form id="categoryform" method="post" action=".">
+{% block content %} 
+<div class="container">
+<div class="panel-group">
+      <div class="panel panel-default">
+        <div class="panel-body">
+         <h3>Add a new MS analysis</h3>
+<p style ="font-size:90%;">Identify the relevance between various motifs across samples and produce principal component analysis, Dendrogram, heat map in order to visualize the motifs relevance and sample differences.</p>
+<p style ="font-size:90%;">Statistical methods like z-score, t-test, p-values and q-values will be produced to confirm the correlation and relevance of motifs. </p>
+  </div>
+     </div>           
+      </div>
+<form id="categoryform" method="post" action="/index/{{exp.experimentName}}/" enctype="multipart/form-data">
+    <p style ="font-size:90%;margin-left: 20px">Choose sample names for Healthly(LEFT) and Diagnose(RIGHT)</p>
         <div class="select">
-            <select name="group1" id="group1" multiple  size="30">
+            <select name="group1" id="group1" multiple  size="15">
             </select>
         </div>
 
@@ -57,7 +88,7 @@ $('#group2').removeSelected('#selectitem');
         </div>
 
         <div class="select">
-            <select id="selectitem" multiple size="30">
+            <select id="selectitem" multiple size="15">
                 {% for result in result_list %}
                     <option value="{{result.fileName}}">{{result.fileName}} </option>
                 {% endfor %}
@@ -70,16 +101,18 @@ $('#group2').removeSelected('#selectitem');
         </div>
 
         <div class="select">
-            <select name="group2" id="group2" multiple  size="30">
+            <select name="group2" id="group2" multiple size="15">
             </select>
         </div>
 
         <div style="clear:both;margin-bottom:10px"></div>
            
-    <input id="submit" type="submit" name="submit" value="Submit" class="btn btn-primary" onclick="#"/>
+    <input id="submit" type="submit" name="submit" value="Submit" class="btn btn-primary" onclick="return validate();"/>
+    <label id ="errors" style="display: inline-block;color: red"></label>
+
             {% csrf_token %}
     </form>
-               
+    </div>              
           
 <!-- /.container -->
 {% endblock %}

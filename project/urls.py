@@ -21,7 +21,7 @@ from django.contrib.auth import views as auth_views
 from django.conf.urls import include
 from django.views.generic.base import RedirectView
 from rango import views
-from rango.forms import LoginForm
+#from rango.forms import LoginForm
 
 
 urlpatterns = [
@@ -35,9 +35,9 @@ urlpatterns = [
     #url(r'^rango/', include('rango.urls')),
     #url(r'^rango/', include('rango.urls', namespace="rango")),
     #url(r'^$', RedirectView.as_view(url='/rango/')),
-    url(r'^login/$', auth_views.login, {'template_name': 'login.html', 'authentication_form': LoginForm}),
-    url(r'^logout/$', auth_views.logout, {'next_page': '/login'}),
-    url(r'^register/$', auth_views.logout, {'next_page': '/login'}),
+    #url(r'^login/$', auth_views.login, {'template_name': 'login.html', 'authentication_form': LoginForm}),
+    #url(r'^logout/$', auth_views.logout, {'next_page': '/login'}),
+    #url(r'^register/$', auth_views.logout, {'next_page': '/login'}),
     #url(r'^accounts/login/$', views.LoginView.as_view(), name='login'),
     #url(r'^basic/', include('basic.urls')),
 ]

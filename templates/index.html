@@ -1,33 +1,60 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
 
 <div class="container">
-  <h1></h1>
+  <h2>Analyse data for experiment - {{expname}}</h2>
   <p class="lead"></p>
 </div>
 
 <div class="container">
   {% if expname %}  
-  <table class="table table-striped table-hover">
-    <tr>
-      <td>Motif-Variance</td>
-      <td><a class="btn btn-default" href="/plotm/{{expname}}">View</a></td>
-    </tr>  
-    <tr>
-      <td>PCA-plot</td>
-      <td><a class="btn btn-default" href="/plotv/{{expname}}">View</a></td>
-    </tr>
-    <tr>
-      <td>Hierarchical Cluster</td>
-      <td><a class="btn btn-default" href="/ploth/{{expname}}">View</a></td>
-    </tr> 
-    <tr>
-      <td>Submit new analysis</td>
-      <td><a class="btn btn-default" href="/categorySel/{{expname}}">View</a></td>
-    </tr>  
-      
-  </table>
+<div class="row">
+  <div class="col-sm-6">
+    <div class="card">
+      <img class="card-img-top" src="/static/images/pca.png" width="500" height="300" alt="Card image cap">  
+       <div class="card-block">
+        <h3 class="card-title">Principal Component Analysis</h3>
+        <p class="card-text" style ="font-size:80%;">Find the directions of maximum variance in high-dimensional data and project it onto a smaller                                    dimensional subspace while retaining most of the information.</p>
+        <a href="/plotv/{{expname}}" class="btn btn-primary">Generate PCA plot</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="card">
+     <img class="card-img-top" src="/static/images/dendrogram.png" width="500" height="300" alt="Card image cap">    
+      <div class="card-block">
+        <h3 class="card-title">D3 Dendrogram</h3>
+         <p class="card-text"style ="font-size:80%;">A dendrogram is a tree diagram to illustrate the arrangement of the motif clusters</p>
+        <a href="/ploth/{{expname}}" class="btn btn-primary">Generate dendrogram</a>
+      </div>
+    </div>
+  </div> 
+    </div>
+   
+<div class="row">
+  <div class="col-sm-6">
+    <div class="card">
+      <img class="card-img-top" src="/static/images/heatmap.png" width="500" height="300" alt="Card image cap">  
+      <div class="card-block">
+        <h3 class="card-title">Heatmap Dendrogram</h3>
+        <p class="card-text" style ="font-size:80%;">Cluster both samples and motifs in the heat map. The result of a hierarchical clustering calculation will be displayed in a heat map as a dendrogram, which is a tree-structure of the hierarchy.</p>
+        <a href="/plotv/{{expname}}" class="btn btn-primary">Generate Heatmap</a>
+      </div>
+    </div>
+  </div>
+   <div class="col-sm-6">
+    <div class="card">
+     <img class="card-img-top" src="/static/images/stats.jpg" width="650" height="300" alt="Card image cap">    
+      <div class="card-block">
+        <h3 class="card-title">Motif score and t-test</h3>
+         <p class="card-text"style ="font-size:80%;">The t test compares two averages and identifies if they are different from each other and how significant the differences are. Motif score is z-score which defines differential prevelance between motifs.</p>
+        <a href="/plotm/{{expname}}" class="btn btn-primary">Visualize p-value and motif score</a>
+      </div>
+    </div>
+  </div> 
+</div>
+ 
   {% endif %}  
 </div>
 <!-- /.container -->

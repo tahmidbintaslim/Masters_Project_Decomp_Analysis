@@ -73,7 +73,7 @@ if __name__ == '__main__':
     sklearn_pca = PCA(n_components = 2,whiten = True)
     sklearn_pca.fit(alpha_values)
     var = sklearn_pca.explained_variance_ratio_
-    print len(var)
+    #print len(var)
     pc1 = str(var[0:1] * 100)
     pc2 = str(var[1:2] * 100)
     #exp.alpha_variance = "PC2" + " " + str(var[0:1]) + "\n" + "PC1" + " " + str(var[1:2])
