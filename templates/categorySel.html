@@ -75,7 +75,7 @@ $('#group2').removeSelected('#selectitem');
   </div>
      </div>           
       </div>
-<form id="categoryform" method="post" action="/index/{{exp.experimentName}}/" enctype="multipart/form-data">
+<form id="categoryform" method="POST" action="." enctype="multipart/form-data">
     <p style ="font-size:90%;margin-left: 20px">Choose sample names for Healthly(LEFT) and Diagnose(RIGHT)</p>
         <div class="select">
             <select name="group1" id="group1" multiple  size="15">
@@ -107,7 +107,7 @@ $('#group2').removeSelected('#selectitem');
 
         <div style="clear:both;margin-bottom:10px"></div>
            
-    <input id="submit" type="submit" name="submit" value="Submit" class="btn btn-primary" onclick="return validate();"/>
+    <input id="submitbtn" type="submit" name="submit" value="Submit" class="btn btn-primary" onclick="return validate();"/>
     <label id ="errors" style="display: inline-block;color: red"></label>
 
             {% csrf_token %}

@@ -12,10 +12,10 @@ from rango.models import Experiment,FileDetail,MotifList,AlphaTable
 import sys
 #from django.contrib.auth.models import User
 
-def plotv():
+#def plotv():
     #expname = sys.argv[1]
-    exp = Experiment.objects.get(experimentName = "exp1")
-    return exp.pca
+#    exp = Experiment.objects.get(experimentName = "exp1")
+#    return exp.pca
 
 #def ploth():
 #    exp = Experiment.objects.get(experimentName = "exp1")

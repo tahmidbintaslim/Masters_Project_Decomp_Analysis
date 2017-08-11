@@ -16,26 +16,28 @@ class categoryform(forms.Form):
     name = forms.CharField(widget=forms.TextInput(attrs={'style': 'width:300px'}))
     description = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 80}))   
 
-class decompform(forms.Form):
-    exp_name = forms.CharField(label='experiment', max_length=100,
-                               widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'exp'})) 
-    resultids = forms.CharField(label='experiment', max_length=100,
-                               widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'exp'}))   
+class createExpform(forms.ModelForm):
+     
+    class Meta:
+        model = Experiment
+        #labels = {'experimentName' : 'Experiment','resultId':'Result Ids','fileNames':'File Names'}
+        fields = [
+            'experimentName','resultId','fileNames',
+        ]
+        widgets = {'experimentName': forms.Textarea(attrs={'rows': 1, 'cols': 50}),
+            'resultId': forms.Textarea(attrs={'rows': 8, 'cols': 50}),
+            'fileNames': forms.Textarea(attrs={'rows': 8, 'cols': 50})
+            
+                  }
+        exclude = ('pca','hclus',)
+        #fields = ('experimentName','resultId','fileNames') 
+'''    
     
-#class ExpForm(forms.Form):
-#      exp_name = forms.CharField(label='experiment', max_length=30,
-#                                widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'exp'}))
-        
-#SearchForm = search_form_factory(Experiment.objects.all(),
-#                                 ['^experimentName'])   
-#SearchForm = search_form_factory(Experiment.objects.get(),
-#                                 ['^experimentName'])   
-#class SearchForm(forms.Form):
- #   exp_name = forms.CharField(label='experiment', max_length=100)
-        
-#class RegistrationForm(forms.Form):
- #   username = forms.CharField(label='Username', max_length=30)
- #   email = forms.EmailField(label='Email')
-  #  password = forms.CharField(label='Password',
-   #                       widget=forms.PasswordInput())
+    exp_name = forms.CharField(label='Experiment Name', max_length=50,
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'expname'}))
+    filenames = forms.CharField(label='File Names', max_length=50,
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'file'})) 
+    resultids = forms.CharField(label='Result Ids', max_length=50,
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'resid'}))   
+'''    
 

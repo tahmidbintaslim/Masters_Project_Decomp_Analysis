@@ -7,18 +7,19 @@ from django.conf import settings
 class Experiment(models.Model):
     experimentName = models.TextField(max_length=128, unique=True)
     resultId = models.TextField()
-    category = models.TextField()
+    fileNames = models.TextField(null=True)
     pca = models.TextField(null=True)
     hclus = models.TextField(null=True)
-    
+    heatmap = models.TextField(null=True)
     
     def __unicode__(self):
         return self.experimentName
     
 class FileDetail(models.Model):
-    experimentName = models.ForeignKey(Experiment)  
+    experimentName = models.ForeignKey(Experiment)
+    resultId = models.TextField()
     fileName = models.TextField()
-    category = models.TextField()
+    category = models.TextField(null=True)
     motif_count = models.IntegerField(null=True, default=300)
 
     def __str__(self):
