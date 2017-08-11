@@ -16,7 +16,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext 
 from django.shortcuts import render_to_response
 from rango.models import Experiment,FileDetail,MotifList,AlphaTable
-from simple_search import search_form_factory
+
 from sklearn.decomposition import PCA
 import simplejson as json
 from rango.models import Experiment,FileDetail,MotifList,AlphaTable

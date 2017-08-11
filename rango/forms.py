@@ -1,6 +1,6 @@
 from django.contrib.auth.forms import AuthenticationForm 
 from django import forms
-from simple_search import search_form_factory
+
 from .models import Experiment,FileDetail,MotifList,AlphaTable
 
 # If you don't do this you cannot use Bootstrap CSS
