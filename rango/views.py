@@ -9,17 +9,13 @@ from . import Load_data
 from rango.forms import categoryform
 from django.core.urlresolvers import reverse
 from django.contrib.auth import authenticate, login, logout
-#from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse_lazy
-from django.views import generic
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext 
 from django.shortcuts import render_to_response
-from rango.models import Experiment,FileDetail,MotifList,AlphaTable
-
+from rango.models import Experiment,FileDetail,MotifList,AlphaTable,MotifSetList
 from sklearn.decomposition import PCA
 import simplejson as json
-from rango.models import Experiment,FileDetail,MotifList,AlphaTable
 import jsonpickle
 from plotly.offline import plot, iplot, init_notebook_mode
 import plotly.graph_objs as go
@@ -27,67 +23,74 @@ from scipy.stats import ttest_ind
 from plotly.tools import FigureFactory as FF
 import scipy
 from scipy.spatial.distance import pdist,squareform
-#from .forms import SearchForm
-#from rango.models import User,Details
+from django.contrib import messages
 
 #@login_required(login_url="login/")
 def home(request):
     return render(request,"base.html") 
 
 def loadData(request):
-    context_dict = {}
+    context_dict = {}    
     if request.method == "POST":
-        decompform = forms.createExpform(request.POST)
-        if decompform.is_valid():
-            '''
-            data = decompform.save(commit=False)
-            data.experimentName = request.POST['experimentName']
-            data.resultId= request.POST['resultId']
-            data.fileNames = request.POST['fileNames']
-            #data.save()
-            '''
-            print request.POST['experimentName']
-            Load_data.populateExperiment(request.POST['experimentName'],request.POST['resultId'],request.POST['fileNames'])
-            Load_data.populateFileDetail(request.POST['experimentName'],request.POST['resultId'],request.POST['fileNames'])
-            Load_data.populateMotifList(request.POST['experimentName'],request.POST['resultId'],request.POST['fileNames'])
-            Load_data.populateAlphaMatrix(request.POST['experimentName'],request.POST['resultId'],request.POST['fileNames'])
-            
+        decompform = forms.createExpform(request.POST)        
+        if decompform.is_valid():           
+            print request.POST['motifset'] 
+            motifset = MotifSetList.objects.get(id = request.POST['motifset'])
+            Load_data.populateExperiment(request.POST['experimentName'],request.POST['description'],
+                                         request.POST['resultId'],request.POST['fileNames'],motifset)
+            Load_data.populateFileDetail(request.POST['experimentName'],
+                                         request.POST['resultId'],request.POST['fileNames'])
+            Load_data.populateMotifList(request.POST['experimentName'],
+                                        request.POST['resultId'],request.POST['fileNames'])
+            Load_data.populateAlphaMatrix(request.POST['experimentName'],
+                                         request.POST['resultId'],request.POST['fileNames'])                                         
+            Load_data.loadAnnotation(request.POST['experimentName'],motifset) 
+            return HttpResponseRedirect(reverse('rango:search'))
         else:
-            context_dict['decompform'] = decompform   
+            context_dict['decompform'] = decompform 
+            messages.error(request, "Some Fields are missing or Invalid!!")
     else:
         decompform = forms.createExpform()
         context_dict['decompform'] = decompform  
-    return render(request, 'add.html', {'form': decompform}) 
+        
+    return render(request, 'add.html', context_dict) 
 
 def search(request):
-    result_list = Experiment.objects.all()
-    return render(request, 'search.html', {'result_list': result_list})
+    context_dict ={}
+    context_dict['result_list'] = Experiment.objects.all()
+    return render(request, 'search.html', context_dict)
 
 def categorySel(request,expname):
     #print expname
     context_dict = {}
+    #expn = str(expname)
     exp = Experiment.objects.get(experimentName = expname)
+    print exp
     result_list = FileDetail.objects.filter(experimentName = exp)
-    print result_list
-    print request.method
+    #print result_list
+    #print request.method
     if request.method == 'POST':
         categoryf = categoryform(request.POST)
         group1 = request.POST.getlist('group1')
         group2 = request.POST.getlist('group2')
-        print group1
-        print group2
-        for g1,g2 in zip(group1,group2):
+        print len(result_list)        
+        for g1 in group1:
             for i in range(len(result_list)): 
                 if g1 == str(result_list[i].fileName):                     
                     result_list[i].category ='0'
                     print result_list[i].category 
                     result_list[i].save()  
-                if g2 == str(result_list[i].fileName):   
+        for g2 in group2:
+            for i in range(len(result_list)): 
+                if g2 == str(result_list[i].fileName):                     
                     result_list[i].category ='1'
-                    result_list[i].save()
+                    print result_list[i].category 
+                    result_list[i].save()   
+                
         #context_dict['result_list'] = result_list
-        context_dict['expname'] = exp            
-        return render(request, 'index.html',context_dict)        
+        context_dict['expname'] = exp 
+        return HttpResponseRedirect(reverse('rango:index', args=(exp,)))
+               
     else:
         print "hello"
         context_dict['result_list'] = result_list
@@ -109,35 +112,37 @@ def HeatView(request,expname):
     for individual in ind_file:        
         motifs = individual.motiflist_set.all()  
         alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
-        i +=1
-    #print alp_vals    
+        i +=1    
     alpha_values = np.array(alp_vals,np.float) 
+    #Normalize alpha - value/sum
     alpha_values /= alpha_values.sum(axis=1)[:,None]
+    print alpha_values
     alpha_v = alpha_values
+    
+    #Normalize alpha - zscore
     norm_alpha = (alpha_v - (np.mean(alpha_v, axis=0)))/np.std(alpha_v, axis=0)
+    
     motifs = MotifList.objects.filter(experimentName = exp) 
+    
     labels =[]
     for m in motifs:
-        if m.Annotation == "":
+        if m.Annotation is None:
             labels.append(m.MotifName)  
         else:
-            labels.append(m.Annotation)  
-    print labels        
+            labels.append(m.Annotation)         
     data_array = norm_alpha.T
     data_array2 = norm_alpha
+    
+    # Create Up Dendrogram
     figure = FF.create_dendrogram(data_array, orientation='bottom', labels=labels)
-    #plot(figure, filename='dendrogram_with_heatmap')
-    print len(figure['data'])
     for i in range(len(figure['data'])):
         figure['data'][i]['yaxis'] = 'y2'
 
     # Create Side Dendrogram
     dendro_side = FF.create_dendrogram(data_array2, orientation='right')
-    print len(dendro_side['data'])
     for i in range(len(dendro_side['data'])):
         dendro_side['data'][i]['xaxis'] = 'x2'
-
-    # Add Side Dendrogram Data to Figure
+    
     figure['data'].extend(dendro_side['data'])
 
     # Create Heatmap
@@ -147,7 +152,14 @@ def HeatView(request,expname):
     heat_data = squareform(data_dist)
     heat_data = heat_data[dendro_leaves,:]
     heat_data = heat_data[dendro_leaves,:]
-
+    filelabel =[]
+    filelab =[]
+    for files in files:
+        filelabel.append(files.fileName)
+    
+    for dendro_leaves in dendro_leaves:
+        filelab.append(filelabel[dendro_leaves])
+        
     heatmap = go.Data([
     go.Heatmap(
         x = dendro_leaves,
@@ -167,10 +179,10 @@ def HeatView(request,expname):
     figure['layout']['yaxis']['tickvals'] = np.asarray(dendro_side['layout']['yaxis']['tickvals'])
 
     # Edit Layout
-
     figure['layout'].update({'width':1000, 'height':1000,
                          'showlegend':False, 'hovermode': 'closest',
                          })
+    # Edit xaxis
     figure['layout']['xaxis'].update({'domain': [.15, 1],
                                   'mirror': False,
                                   'showgrid': False,
@@ -201,7 +213,8 @@ def HeatView(request,expname):
                                   'showline': False,
                                   'zeroline': False,
                                   'showticklabels': True,
-                                  'ticks': ""})
+                                  'ticks': "",
+                                  'ticktext': filelab})
     # Edit yaxis2
     figure['layout'].update({'yaxis2':{'domain':[.825, .975],
                                    'mirror': False,
@@ -212,15 +225,16 @@ def HeatView(request,expname):
                                    'ticks':""}})
 
     # Plot!
-    heat_div = plot(figure, output_type='div')
+    heat_div = plot(figure, output_type='div',include_plotlyjs=False)
     exp.heatmap = heat_div
     exp.save()
     context={
     'plot':exp.heatmap,
+    'exp':exp.experimentName,    
     'Name': 'Dendrogram Heatmap'     
      }
        
-    return render(request, 'plot.html', context)
+    return render(request, 'plotlyPCA_HeatMap.html', context)
        
 def PlotView(request,expname):   
     exp = Experiment.objects.get(experimentName = expname)
@@ -236,6 +250,7 @@ def PlotView(request,expname):
     #print alp_vals    
     alpha_values = np.array(alp_vals,np.float) 
     alpha_values /= alpha_values.sum(axis=1)[:,None]
+    #print alpha_values
     category_seq =[]
     fileNames=[]
     m_score=[]
@@ -259,16 +274,14 @@ def PlotView(request,expname):
     sklearn_pca = PCA(n_components = 2,whiten = True)
     sklearn_pca.fit(alpha_values)
     var = sklearn_pca.explained_variance_ratio_
-    pc1 = str(var[0:1] * 100)
-    pc2 = str(var[1:2] * 100)
+    pc1 = var[0:1] * 100
+    pc2 = var[1:2] * 100
     y = np.array(fileNames)
     alpha_sklearn = sklearn_pca.transform(alpha_values)
     data = []
     motifs = MotifList.objects.filter(experimentName = ind_file[0]) 
     array = np.array(sklearn_pca.components_)
-    import pandas as pd
-    print pd.DataFrame(alpha_sklearn.T,columns=fileNames,index = ['PC-1','PC-2'])
-    #for names in fileNames:
+    
     for name,color in zip(fileNames,fileColor):
         #print name
         #print y
@@ -301,18 +314,18 @@ def PlotView(request,expname):
     layout = go.Layout(
         showlegend=False,
         autosize=False,
-        width=800,
-        height=700,
+        width=600,
+        height=500,
         
         xaxis=dict(
-            title= 'PC1' + " " + pc1 + "%",          
+            title= 'PC1' + "(" + str(round(float(pc1),2)) + "% of variance)",          
             domain=[0, 0.85],
             showgrid=False,
             zeroline=False
             
         ),
         yaxis=dict(
-            title='PC2' + " " + pc2 + "%",
+            title='PC2' + "(" + str(round(float(pc2),2)) + "% of variance)", 
             domain=[0, 0.85],
             showgrid=False,
             zeroline=False
@@ -331,10 +344,11 @@ def PlotView(request,expname):
     exp.save()
     context={
     'plot':exp.pca,
+    'exp':exp.experimentName,    
     'Name': 'Prinicipal Component Analysis'    
      }
        
-    return render(request, 'plot.html', context)   
+    return render(request, 'plotlyPCA_HeatMap.html', context)   
     
     
 def DendroView(request,expname):
@@ -360,12 +374,13 @@ def DendroView(request,expname):
         alp_vals = new_alp_vals 
       
     alpha_values = np.array(alp_vals)
+    print alpha_values
     motifs = MotifList.objects.filter(experimentName = exp)
     for motifs in motifs:
          names.append(motifs.MotifName)
     
     dendro = FF.create_dendrogram(alpha_values.T,orientation='left',labels = names)
-    dendro['layout'].update({'width':500, 'height':500})
+    dendro['layout'].update({'width':5000, 'height':5000})
     #plot(dendro)
     
     
@@ -375,8 +390,9 @@ def DendroView(request,expname):
     distMat = scipy.spatial.distance.pdist( dataMatrix )
 
     # Cluster hierarchicaly using scipy
-    clusters = scipy.cluster.hierarchy.linkage(distMat, method='single')
-
+    clusters = scipy.cluster.hierarchy.linkage(distMat, method='complete')
+    import sys
+    sys.setrecursionlimit(10000)
 
     # Create dictionary for labeling nodes by their IDs
     labels = list(names)
@@ -441,16 +457,55 @@ def DendroView(request,expname):
     context={
         'exp':exp,
         }
-    return render(request, 'index2.html', context)    
+    return render(request, 'Dendrogram.html', context)    
 
 def VarianceView(request,expname):
-        # Call the base implementation first to get a context
-     #   context = super(VarianceView, self).get_context_data(**kwargs)
-     #   context['variance'] = plots.plotm()
         exp = Experiment.objects.get(experimentName = expname)
-        motif = MotifList.objects.filter(experimentName = exp)
+        files = FileDetail.objects.filter(experimentName = exp)
+        ind_file = [f.experimentName for f in files]
+        motifs = MotifList.objects.filter(experimentName = ind_file[0])    
+        alp_vals = []
+        i =0
+        for individual in ind_file:        
+            motifs = individual.motiflist_set.all()  
+            alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
+            i +=1    
+        alpha_values = np.array(alp_vals,np.float) 
+        #Normalize alpha - value/sum
+        alpha_values /= alpha_values.sum(axis=1)[:,None] 
+        #------CALCULATE MOTIF SCORE-------#
+        category_seq =[]
+        m_score=[]
+        group1_index=[]
+        group2_index=[]
+        for i,files in zip(range(len(files)),files):
+            category_seq.append(str(files.category))  
+            if files.category =='0':
+                group1_index.append(i)
+            else:
+                group2_index.append(i)
+        category_seq = np.array(category_seq)
+        Motiflist = MotifList.objects.filter(experimentName = exp)
+        for i,alp in enumerate(alpha_values.T):
+        #for motifs in Motiflist:
+            a = np.array(alp)            
+            g1 = a[group1_index]
+            g2 = a[group2_index]
+            zscore = (g1.mean() - g2.mean()) / (g1.std() + g2.std())  #or use zscore method????
+            t, p = ttest_ind(g1, g2, equal_var=False)
+            m_score.append((zscore, t, p))
+        i =0        
+        for motifs,score in zip(Motiflist,m_score):
+        #     mscore_str = motifs.MotifName + " " + 
+            motifs.z_score = m_score[i][0]
+            motifs.t_value = m_score[i][1]
+            motifs.p_value = m_score[i][2]
+            i +=1
+            motifs.save()  
+        motif = MotifList.objects.filter(experimentName = exp)    
         context={
         'motif':motif,
+        'exp':exp.experimentName,    
         }
         return render(request, 'variance.html', context)
 

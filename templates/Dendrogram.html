@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+{{block.super}}
+<meta charset="utf-8">
+<style>
+.node circle {
+  fill: #abc;
+  stroke: blue;
+  stroke-width: 1.5px;
+}
+.node {
+  font: 10px sans-serif;
+}
+.link {
+  fill: none;
+  stroke: #abbf;
+  stroke-width: 2px;       
+   
+}
+line.link:hover {stroke: red;stroke-width: 2px}    
+   
+</style>
+{% endblock %}
+{% block content %} 
+<body>
+   
+<a href="/index/{{exp}}" class="previous">&laquo; Go back to Index</a>  
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>    
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+var color = d3.scale.category20();       
+var width = $(document).width();
+var height = $(document).height()+2000;
+var cluster = d3.layout.cluster()    
+   .size([height, width]); 
+var diagonal = d3.svg.diagonal()    
+   .projection (function(d) { return [d.y, d.x];}); 
+var svg = d3.select("body").append("svg")    
+   .attr("width",width)    
+   .attr("height",height) 
+   .call(d3.behavior.zoom().on("zoom", function () {
+        svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
+      }))
+      .append("g");
+  var root = {% autoescape off %}{{ exp.hclus }}{% endautoescape %}; 
+  var nodes = cluster.nodes(root),
+      links = cluster.links(nodes);
+                                              
+  var link = svg.selectAll(".link")       
+      .data(links)       
+      .enter().append("path")       
+      .attr("class","link")       
+      .attr("d", diagonal);
+                                               
+                                                 
+  const linkElements = svg.append('g')
+  .selectAll('line')
+  .data(links)
+  .enter().append('line')
+    .attr('stroke-width', 2)
+    .attr('stroke', '#E5E5E5') 
+  
+  var node = svg.selectAll(".node")
+      .data(nodes)
+      .enter().append("g")
+      //.on("click", click)
+      .attr("class", "node")
+      .on("mouseover", function(d) {
+       //.style('stroke', '#e08ab4')
+       //link.style("stroke", function(d) { return color(d.source.depth); });
+       var g = d3.select(this); // The node
+          // The class is used to remove the additional text later
+        
+    d3.select(this).select("circle").transition()
+        .duration(750)
+        .attr("r", 16)
+        .style("fill", "lightsteelblue");   
+       var info = g.append('text')
+             .classed('info', true)
+             .attr('x', 20)
+             .attr('y', 10)
+             .style("font-weight","bold")
+             .style("font", "20px sans-serif")
+             .text(d.name);            
+      })
+      .on("mouseout", function() {
+          // Remove the info text on mouse out.
+          d3.select(this).select('text.info').remove()
+          d3.select(this).select("circle").transition()
+        .attr("r", 4.5)
+        .style("fill", "lightsteelblue");  
+        })
+      .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+   
+  
+    node.append("circle")
+      .attr("r", 4.5);
+                                               
+    node.append("text")
+      .attr("dx", function(d) { return d.children ? -8 : 8; })
+      .attr("dy", 3)
+      .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
+      .text(function(d) { return d.children ? "" : d.name });
+function colorNode(name){
+              //iterate through all the dom and get the DOM which has the data
+              var node = d3.selectAll(".node")[0].filter(function(d){
+                return d3.select(d).data()[0].name == name;
+              });
+              //for the matching node DOM set the fill to be red
+              d3.selectAll(node).style("fill", "red");
+            }
+function colorLink(src,tgt){
+              //iterate through all the links for src and target.
+              var link = d3.selectAll(".link")[0].filter(function(d){
+                return (d3.select(d).data()[0][0].name == source && d3.select(d).data()[0][2].name == target);
+              });
+              //for the filtered link make the stroke red.
+              d3.selectAll(link).style("stroke", "red");
+            }                                                 
+</script>
+    
+    </body>
+{% endblock %}    

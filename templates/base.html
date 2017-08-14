@@ -2,18 +2,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MS2LDA+ {% block title %}{% endblock %}</title>  
+    <title>MS2LDA+ Decomposition Analysis {% block title %}{% endblock %}</title>  
   
   <!-- Latest compiled and minified CSS -->
   <link href="/static/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=EB+Garamond">
-    <style>
+<style>
       body {
         font-family: 'EB Garamond', serif;
-        font-size : 20px;  
+          font-size : 20px; }
+    .bg {
+    /* The image used */
+    background-image: url("https://s-media-cache-ak0.pinimg.com/originals/34/a3/d4/34a3d4a1f6258fce21b3dde4bd05b687.jpg");
+
+    /* Full height */
+    height: 100%; 
+
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
         
       }
     </style>
@@ -32,7 +44,7 @@
 	        <span class="icon-bar"></span>
 	        <span class="icon-bar"></span>
 	      </button>
-	      <a class="navbar-brand" href="/">MS2LDA+</a>
+	      <a class="navbar-brand" href="/">MS2LDA+DA</a>
 	    </div>       
 	    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 	      <ul class="nav navbar-nav navbar-left">
@@ -54,50 +66,27 @@
     
     <div class="panel-group">
       <div class="panel panel-default">
-        <div class="panel-body">
-            <h2>Metabolomics</h2>
-              <p style="font-size:90%;">
-                 <a href="https://en.wikipedia.org/wiki/Metabolomics">Metabolomics</a> is the large-scale, untargeted studies of the small molecules involved in essential life-sustaining chemical processes (metabolites). Untargeted metabolomics has provided insights into a wide array of fields, such as medical diagnostics, drug discovery, personalised medicine and many others.
-            Measurements in metabolomics studies are routinely performed using <a     href="https://en.wikipedia.org/wiki/Liquid_chromatography%E2%80%93mass_spectrometry">liquid chromatography mass spectrometry</a> (LC-MS) instruments.
-            Using <a href="https://en.wikipedia.org/wiki/Tandem_mass_spectrometry">tandem mass spectrometry</a>, fragmentation peaks characteristic to a compound can be obtained and used to help establish the identity of the compound.
-        </p>
-    </div>
-     </div>
-     <div class="panel panel-default">
-    <div class="panel-body">
-        <h2>Unsupervised Substructure Discovery</h2>
-        <p style="font-size:90%;">
-            <a href="https://en.wikipedia.org/wiki/Fragmentation_(mass_spectrometry)">Fragmentation spectra</a>, which provide the characteristic fingerprints of compounds, also contain structural information where a subset of fragment peaks may correspond to a shared chemical substructure in a class of compounds.
-            The aim of this site is to provide an online platform that allows users to perform unsupervised substructure discovery in fragmentation experiments,
-            decompose fragmentation experiments into characterized substructures (Mass2Motifs) found in MS/MS spectra of reference compounds,
-            and integrate fragmentation analysis with comparative metabolomics experiments.
-        </p>
-        
-        <p>
-         </div>
-     </div>
-        <div class="panel panel-default">
-    <div class="panel-body">
-        <h2>MS2LDA</h2>
-        <p style="font-size:90%;">
-            <a href="http://ms2lda.org">MS2LDA</a> was introduced to improve the use of fragmented spectra and to facilitate the identification of untargeted molecules. MS2LDA is inspired by text processing technique Latent dirichlet allocation(LDA). LDA is a generative probabilistic model which requires no supervision and is highly effective in processing unlabeled data. MS2LDA leverages LDA by first extracting mass fragments and neutral losses(Mass2Motifs) from fragmentation spectra, and this is later used to annotate the molecules which are not present in the spectra with the help of experts. 
+
     
-        </p>
-        
-        <p>
-         </div>
-     </div>
-     <div class="panel panel-default">
     <div class="panel-body">
         <h2>MS2LDA+</h2>
         <p style="font-size:90%;">
-            <a href="http://pubs.acs.org/doi/abs/10.1021/acs.analchem.7b01391">MS2LDA+</a>, In untargeted metabolomics approaches, the inability to structurally annotate relevant features and map them to biochemical pathways is hampering the full exploitation of many metabolomics experiments. Furthermore, variable metabolic content across samples result in sparse feature matrices that are statistically hard to handle. Here, we introduce MS2LDA+ that tackles both above-mentioned problems. Previously, we presented MS2LDA, which extracts biochemically relevant molecular substructures (“Mass2Motifs”) from a collection of fragmentation spectra as sets of co-occurring molecular fragments and neutral losses, thereby recognizing building blocks of metabolomics. Here, we extend MS2LDA to handle multiple metabolomics experiments in one analysis, resulting in MS2LDA+. By linking Mass2Motifs across samples, we expose the variability in prevalence of structurally related metabolite families. 
-We are currently considering how to store this structural information in such a way that it can be easily transferred to new experiments and how to make it searchable for the scientific community, for example, by converting them into MassBank records.
-
+            <a href="http://pubs.acs.org/doi/abs/10.1021/acs.analchem.7b01391">MS2LDA+</a>, In untargeted metabolomics approaches, the inability to structurally annotate relevant features and map them to biochemical pathways is hampering the full exploitation of many metabolomics experiments. Furthermore, variable metabolic content across samples result in sparse feature matrices that are statistically hard to handle. Here, we introduce MS2LDA+ that tackles both above-mentioned problems. Previously, we presented MS2LDA, which extracts biochemically relevant molecular substructures (“Mass2Motifs”) from a collection of fragmentation spectra as sets of co-occurring molecular fragments and neutral losses, thereby recognizing building blocks of metabolomics. Here, we extend MS2LDA to handle multiple metabolomics experiments in one analysis. By linking Mass2Motifs across samples, we expose the variability in prevalence of structurally related metabolite families. 
         </p>
         <p>
          </div>
      </div>   
+     <div class="panel panel-default">
+    <div class="panel-body">
+        <h2>Decomposition Analysis</h2>
+        <p style="font-size:90%;">
+           Considering how to store the structural information received from LDA run in such a way that it can be easily transferred to new experiments and how to make it searchable for the scientific community, for example, by converting them into MassBank records, decomosition functionality was introduced.Decomposition allows for spectra in a dataset to be decomposed onto a set of pre-defined motifs from another experiment, this is clearly a benefit. Another benefit is that annotations can also be directly transferred from the original pre-defined Mass2Motifs to new and unseen dataset (without having to perform a motif matching step).<br/>
+            Following decomposition idea, This project aims to analyze decomposed data returned from decomposition API using a web based tool. In MS2LDA+, the full LDA scan was performed on all samples together in order to find topic prevalence and annotations. This project follows the decomposition idea, to allow the use of previously retrieved information from the LDA run and uses that as the motifset for the identification of molecules/motifs. This requires the spectra of sample data needs to be loaded with the particular motifset e.g massbank_motifset, gnps_massbank_combined and gnps_motifset to the decomposition API server. The decomposition API will return the results in a specific format. For this project, we are interested in the alpha vector of motifs returned from API. The aim of this project is to analyze these alpha values and expose biochemical differences across samples, along with the differential prevalence of motifs, using a web based tool that is developed as part of this project. This webapp will allow researchers to do similar analysis on decomposition results as they did when using MS2LDA+ to understand the disease. 
+   
+        </p>
+        <p>
+         </div>
+     </div>    
         
       </div> 
        {% endblock %}  
@@ -113,6 +102,7 @@ We are currently considering how to store this structural information in such a 
         
         {% block js_block %}
     {% endblock %}
+    
 	</body>
 
 	</html>

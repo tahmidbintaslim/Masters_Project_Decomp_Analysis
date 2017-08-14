@@ -5,15 +5,16 @@ import simplejson as json
 import numpy as np
 import requests
 
-def populateExperiment(experimentName,resultId,filename):  
-    experiment = Experiment.objects.get_or_create(experimentName = experimentName, resultId = resultId,fileNames = filename)
+def populateExperiment(experimentName,description,resultId,filename,motifset):  
+    experiment = Experiment.objects.get_or_create(experimentName = experimentName, description=description,
+                                                  resultId = resultId,fileNames = filename,motifset=motifset)
 
 def populateFileDetail(experimentName,resultId,filename):
     experiments = Experiment.objects.filter(experimentName=experimentName)
     print experiments
     for experiment in experiments:
-        res_id = str(experiment.resultId).split(',')
-        filename = str(experiment.fileNames).split(',')
+        res_id = str(experiment.resultId).split('\n')
+        filename = str(experiment.fileNames).split('\n')
         for res_id,filename in zip(res_id,filename):
             FileDetail.objects.create(experimentName = experiment,resultId= res_id, fileName = filename,motif_count=0)
                 
@@ -35,37 +36,32 @@ def populateMotifList(experimentName,resultId,filename):
         index =0
         for i in range(len(motif_list)):            
             MotifList.objects.get_or_create(MotifName = motif_list[i],experimentName = experiment,MotifId=i)
-
-            
             
 def populateAlphaMatrix(experimentName,resultId,filename):
     experiment = Experiment.objects.filter(experimentName = experimentName)
     for experiment in experiment:
         file = FileDetail.objects.filter(experimentName = experiment)
-        Motiflist = MotifList.objects.filter(experimentName = experiment)
+        Motiflist = MotifList.objects.filter(experimentName = experiment)        
         alpha_value = []
         alpha_values = np.zeros((len(file),len(Motiflist)),np.float)
-        print alpha_values
-        i =0
-        for file in file:
+        print len(Motiflist)
+        for file in file:           
             index =1
             link ='http://ms2lda.org/decomposition/api/batch_results/{}'.format(file.resultId)
             raw_data = urlopen(link).read()
             url = json.loads(raw_data)
             url = url.get('alpha')
-            alpha_value = sorted(url, key=lambda k: k[0], reverse=False)            
+            alpha_value = sorted(url, key=lambda k: k[0], reverse=False)   
             for motif,i in zip(Motiflist,range(len(Motiflist))):
-                 alp = AlphaTable.objects.get_or_create(mass2motif = motif,
+                print i 
+                alp = AlphaTable.objects.get_or_create(mass2motif = motif,
                                          fileName = file, value = alpha_value[i][index])
-                
-                 i +=1
-            index +=1
+                           
     
-def loadAnnotation(experimentName,resultId,filename):
-    annotation = []
-    print "hello"
+def loadAnnotation(experimentName,motifset):
+    annotation = []  
     url ='http://ms2lda.org/decomposition/api/get_motifset_annotations/'
-    args = {'motifset':'massbank_motifset'}
+    args = {'motifset':motifset}
     response = requests.post(url,args)
     #print response.json()
     #raw_data = urlopen(link).read()
@@ -75,11 +71,11 @@ def loadAnnotation(experimentName,resultId,filename):
     annotation = sorted(url, key=lambda k: k[0], reverse=False)
     print len(annotation)
     print annotation
-    motiflist = MotifList.objects.all()
+    experiment = Experiment.objects.filter(experimentName = experimentName)    
     for i in range(len(annotation)):
-        motiflist = MotifList.objects.all()
+        motiflist = MotifList.objects.filter(experimentName = experiment)
         for motiflist in motiflist:            
-            if motiflist.MotifName[5:] == annotation[i][0]:
+            if motiflist.MotifName == annotation[i][0]:
                 motiflist.Annotation = annotation[i][1]                  
                 motiflist.save()
                 

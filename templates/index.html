@@ -8,14 +8,15 @@
 </div>
 
 <div class="container">
-  {% if expname %}  
+ <div class="jumbotron">   
+{% if expname %}  
 <div class="row">
   <div class="col-sm-6">
     <div class="card">
       <img class="card-img-top" src="/static/images/pca.png" width="500" height="300" alt="Card image cap">  
        <div class="card-block">
         <h3 class="card-title">Principal Component Analysis</h3>
-        <p class="card-text" style ="font-size:80%;">Find the directions of maximum variance in high-dimensional data and project it onto a smaller                                    dimensional subspace while retaining most of the information.</p>
+        <p class="card-text" style ="font-size:80%;">Find the directions of maximum variance in high-dimensional data and project it onto a smaller dimensional subspace while retaining most of the information.</p>
         <a href="/plotv/{{expname}}" class="btn btn-primary">Generate PCA plot</a>
       </div>
     </div>
@@ -45,7 +46,7 @@
   </div>
    <div class="col-sm-6">
     <div class="card">
-     <img class="card-img-top" src="/static/images/stats.jpg" width="650" height="300" alt="Card image cap">    
+     <img class="card-img-top" src="/static/images/stats.jpg" width="500" height="300" alt="Card image cap">    
       <div class="card-block">
         <h3 class="card-title">Motif score and t-test</h3>
          <p class="card-text"style ="font-size:80%;">The t test compares two averages and identifies if they are different from each other and how significant the differences are. Motif score is z-score which defines differential prevelance between motifs.</p>
@@ -57,6 +58,8 @@
  
   {% endif %}  
 </div>
+</div>
+
 <!-- /.container -->
 
 {% endblock %}

@@ -6,20 +6,20 @@
         
         .select{
             float: left;
-            width: 300px;
+            width: 250px;
             overflow: auto;
-            margin-left: 20px; 
+            margin-left: 30px; 
             border: 1px silver solid;
         } 
         .select select{
             border: none;
-            min-width: 300px;
+            min-width: 250px;
         }       
         .arrow{
             float:left;
             margin:20px;
             margin-top: 120px;
-            margin-left: 20px; 
+            margin-left: 10px; 
         }
     </style>
 {% endblock %}
@@ -30,7 +30,7 @@
 <script type="text/javascript">
         function validate()
         {
-
+            
             if (document.getElementById("group1").options.length == 0 || document.getElementById("group2").options.length == 0)
             {
                 var html_to_insert = "*Required fields are empty";
@@ -66,6 +66,7 @@ $('#group2').removeSelected('#selectitem');
 <!-- /.container -->
 {% block content %} 
 <div class="container">
+    <div class="jumbotron">
 <div class="panel-group">
       <div class="panel panel-default">
         <div class="panel-body">
@@ -107,13 +108,13 @@ $('#group2').removeSelected('#selectitem');
 
         <div style="clear:both;margin-bottom:10px"></div>
            
-    <input id="submitbtn" type="submit" name="submit" value="Submit" class="btn btn-primary" onclick="return validate();"/>
+    <input id="submitbtn" type="submit" name="submit" value="Submit" class="btn btn-primary" onclick="return validate();"style="margin-left:900px"/>
     <label id ="errors" style="display: inline-block;color: red"></label>
 
             {% csrf_token %}
     </form>
     </div>              
-          
+  </div>            
 <!-- /.container -->
 {% endblock %}
 

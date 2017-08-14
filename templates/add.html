@@ -1,27 +1,46 @@
 {% extends 'base.html' %}
-
+ 
 {% block content %}
 <div class="container">
-      <h3>Submit Decompostion Files</h3>
+    <div class="jumbotron">
+ <h2>Create a new alpha vector analysis</h2>
+    <h4>This will create an entry in database for alpha matrix, which will allow to do further analysis on motifs</h4>
      <form method="POST" class="createExpform" action="." enctype="multipart/form-data">
             {% csrf_token %}
             <table>
+                {% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li style="color:red"{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
                <tr>
                   <td>Experiment(Should be unique)</td>
-                  <td>{{ form.experimentName }}</td>
+                  <td>{{ decompform.experimentName }}</td>
               </tr>
               <tr>
-                  <td>Result Ids(Should be entered in comma seperated form)</td>
-                  <td>{{ form.resultId }}</td>
+                  <td>Description</td>
+                  <td>{{ decompform.description }}</td>
+              </tr>  
+              <tr>
+                  <td>Result Ids(Each should be entered in newline)</td>
+                  <td>{{ decompform.resultId }}</td>
               </tr>
               <tr>
-                  <td>File Names(Should be entered in comma seperated form)</td>
-                  <td>{{ form.fileNames }}</td>
+                  <td>File Names(Each should be entered in newline)</td>
+                  <td>{{ decompform.fileNames }}</td>
               </tr>
+              <tr>
+                  <td>Motifset(Select from the list)</td>
+                  <td>{{ decompform.motifset }}</td>
+              </tr>  
             </table>
+            
             <div style="clear:both;margin-left:20px"></div>                           
-            <input id="submit" type="submit" name="submit" value="Submit" class="btn btn-primary">
+            <input id="submit" type="submit" name="submit" value="Submit" class="btn btn-primary" style="margin-left:900px;margin-top:20px">
     </form>
+        
 </div> 
-
+</div> 
 {% endblock %}
