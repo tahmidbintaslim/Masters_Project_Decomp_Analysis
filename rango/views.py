@@ -151,7 +151,7 @@ def HeatView(request,expname):
     data_dist = pdist(data_array)
     heat_data = squareform(data_dist)
     heat_data = heat_data[dendro_leaves,:]
-    heat_data = heat_data[dendro_leaves,:]
+    heat_data = heat_data[dendro_leaves]
     filelabel =[]
     filelab =[]
     for files in files:
@@ -225,7 +225,7 @@ def HeatView(request,expname):
                                    'ticks':""}})
 
     # Plot!
-    heat_div = plot(figure, output_type='div',include_plotlyjs=False)
+    heat_div = plot(figure, output_type='div')
     exp.heatmap = heat_div
     exp.save()
     context={
