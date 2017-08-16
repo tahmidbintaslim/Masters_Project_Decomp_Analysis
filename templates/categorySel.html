@@ -33,7 +33,13 @@
             
             if (document.getElementById("group1").options.length == 0 || document.getElementById("group2").options.length == 0)
             {
-                var html_to_insert = "*Required fields are empty";
+                var html_to_insert = "Required fields are empty";
+                document.getElementById("errors").innerHTML = html_to_insert;
+                return false;
+            }
+            else if (document.getElementById("group1").options.length < 2 ||document.getElementById("group2").options.length < 2)
+            {
+                var html_to_insert = "Atleast 2 files are required in each group";
                 document.getElementById("errors").innerHTML = html_to_insert;
                 return false;
             }

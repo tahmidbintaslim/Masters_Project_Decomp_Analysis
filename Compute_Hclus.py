@@ -25,7 +25,9 @@ from scipy.spatial.distance import pdist, squareform
 if __name__ == '__main__':
     expname = sys.argv[1]
     exp = Experiment.objects.get(experimentName = expname)
-    files = FileDetail.objects.filter(experimentName = exp)
+    files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
+    print files
+  
     ind_file = [f.experimentName for f in files]
     motifs = MotifList.objects.filter(experimentName = ind_file[0])    
     alp_vals = []
@@ -134,8 +136,9 @@ if __name__ == '__main__':
                                    'ticks':""}})
 
     # Plot!
-    heat_div = plot(figure, output_type='div')
-    exp.heatmap = heat_div
-    exp.save()
+    #heat_div = plot(figure, output_type='div')
+    #exp.heatmap = heat_div
+    #exp.save()
+    plot(figure, filename='dendrogram_with_heatmap')
     
      

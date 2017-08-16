@@ -17,14 +17,19 @@ from scipy.stats import ttest_ind
 if __name__ == '__main__':
     expname = sys.argv[1]
     exp = Experiment.objects.get(experimentName = expname)
-    files = FileDetail.objects.filter(experimentName = exp)
-    ind_file = [f.experimentName for f in files]
-    motifs = MotifList.objects.filter(experimentName = ind_file[0])    
+    files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
+    individual = files[1].experimentName
+    
+    #ind_file = [f.experimentName for f in files]
+    motifs = MotifList.objects.filter(experimentName = individual) 
+    print motifs
+    
     alp_vals = []
     i =0
-    for individual in ind_file:        
-        motifs = individual.motiflist_set.all() 
+    for i in range(len(files)):        
+        #motifs = individual.motiflist_set.all() 
         alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
+        '''
         i +=1
         new_alp_vals = []
         for av in alp_vals:
@@ -32,8 +37,10 @@ if __name__ == '__main__':
             nav = [a / s for a in av]            
             new_alp_vals.append(nav)
         alp_vals = new_alp_vals 
-      
+        '''
     alpha_values = np.array(alp_vals)
+    alpha_values /= alpha_values.sum(axis=1)[:,None]
+    print alpha_values
     
     #------CALCULATE MOTIF SCORE-------#
     category_seq =[]

@@ -5,9 +5,9 @@ import simplejson as json
 import numpy as np
 import requests
 
-def populateExperiment(experimentName,description,resultId,filename,motifset):  
+def populateExperiment(experimentName,description,resultId,filename):  
     experiment = Experiment.objects.get_or_create(experimentName = experimentName, description=description,
-                                                  resultId = resultId,fileNames = filename,motifset=motifset)
+                                                  resultId = resultId,fileNames = filename)
 
 def populateFileDetail(experimentName,resultId,filename):
     experiments = Experiment.objects.filter(experimentName=experimentName)
@@ -30,13 +30,19 @@ def populateMotifList(experimentName,resultId,filename):
             link ='http://ms2lda.org/decomposition/api/batch_results/{}'.format(file.resultId)
             raw_data = urlopen(link).read()
             url = json.loads(raw_data)
-            url = url.get('alpha')
-            alpha_value = sorted(url, key=lambda k: k[0], reverse=False)
-        motif_list = np.transpose(np.array(alpha_value))[0]
-        index =0
-        for i in range(len(motif_list)):            
-            MotifList.objects.get_or_create(MotifName = motif_list[i],experimentName = experiment,MotifId=i)
             
+            url1 = url.get('alpha')
+            url2 = url.get('motifset')
+            print url2
+            alpha_value = sorted(url1, key=lambda k: k[0], reverse=False)
+        motif_list = np.transpose(np.array(alpha_value))[0]
+        print alpha_value
+        index =0
+        for i in range(len(motif_list)):    
+            #print motif_list[i]
+            MotifList.objects.create(MotifName = motif_list[i],experimentName = experiment,MotifId=i)
+        loadAnnotation(experiments,url2) 
+        
 def populateAlphaMatrix(experimentName,resultId,filename):
     experiment = Experiment.objects.filter(experimentName = experimentName)
     for experiment in experiment:

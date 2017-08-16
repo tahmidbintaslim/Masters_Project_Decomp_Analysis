@@ -3,20 +3,12 @@ import datetime
 from django.contrib.auth.models import User
 from django.db import models
 from django.conf import settings
-
-class MotifSetList(models.Model):
-    motifset = models.TextField(max_length=128, unique=True,default=1)
-       
-    def __str__(self):
-        return self.motifset
-
-    
+   
 class Experiment(models.Model):
     experimentName = models.TextField(max_length=128, unique=True)
     description = models.TextField(null=True)
     resultId = models.TextField()
     fileNames = models.TextField()
-    motifset = models.ForeignKey(MotifSetList,default=1)
     pca = models.TextField(null=True)
     hclus = models.TextField(null=True)
     heatmap = models.TextField(null=True)
@@ -42,6 +34,7 @@ class MotifList(models.Model):
     z_score= models.FloatField(null=True)
     t_value= models.FloatField(null=True)
     p_value= models.FloatField(null=True)
+    q_value= models.FloatField(null=True)
     
     def __unicode__(self):
         return self.MotifName

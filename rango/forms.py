@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import AuthenticationForm 
 from django import forms
 
-from .models import Experiment,FileDetail,MotifList,AlphaTable,MotifSetList
+from .models import Experiment,FileDetail,MotifList,AlphaTable
 
 # If you don't do this you cannot use Bootstrap CSS
 '''
@@ -24,7 +24,7 @@ class createExpform(forms.ModelForm):
         model = Experiment
         #labels = {'experimentName' : 'Experiment','resultId':'Result Ids','fileNames':'File Names'}
         fields = [
-            'experimentName','description','resultId','fileNames','motifset'
+            'experimentName','description','resultId','fileNames'
         ]
         widgets = {'experimentName': forms.Textarea(attrs={'rows': 1, 'cols': 50}),
                    'description': forms.Textarea(attrs={'rows': 1, 'cols': 50}),

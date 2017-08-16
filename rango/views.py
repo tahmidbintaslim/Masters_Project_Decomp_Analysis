@@ -13,7 +13,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext 
 from django.shortcuts import render_to_response
-from rango.models import Experiment,FileDetail,MotifList,AlphaTable,MotifSetList
+from rango.models import Experiment,FileDetail,MotifList,AlphaTable
 from sklearn.decomposition import PCA
 import simplejson as json
 import jsonpickle
@@ -24,6 +24,7 @@ from plotly.tools import FigureFactory as FF
 import scipy
 from scipy.spatial.distance import pdist,squareform
 from django.contrib import messages
+from operator import itemgetter, attrgetter
 
 #@login_required(login_url="login/")
 def home(request):
@@ -34,17 +35,14 @@ def loadData(request):
     if request.method == "POST":
         decompform = forms.createExpform(request.POST)        
         if decompform.is_valid():           
-            print request.POST['motifset'] 
-            motifset = MotifSetList.objects.get(id = request.POST['motifset'])
             Load_data.populateExperiment(request.POST['experimentName'],request.POST['description'],
-                                         request.POST['resultId'],request.POST['fileNames'],motifset)
+                                         request.POST['resultId'],request.POST['fileNames'])
             Load_data.populateFileDetail(request.POST['experimentName'],
                                          request.POST['resultId'],request.POST['fileNames'])
             Load_data.populateMotifList(request.POST['experimentName'],
                                         request.POST['resultId'],request.POST['fileNames'])
             Load_data.populateAlphaMatrix(request.POST['experimentName'],
-                                         request.POST['resultId'],request.POST['fileNames'])                                         
-            Load_data.loadAnnotation(request.POST['experimentName'],motifset) 
+                                         request.POST['resultId'],request.POST['fileNames'])                                    
             return HttpResponseRedirect(reverse('rango:search'))
         else:
             context_dict['decompform'] = decompform 
@@ -65,31 +63,42 @@ def categorySel(request,expname):
     context_dict = {}
     #expn = str(expname)
     exp = Experiment.objects.get(experimentName = expname)
-    print exp
     result_list = FileDetail.objects.filter(experimentName = exp)
-    #print result_list
-    #print request.method
+    motifs = MotifList.objects.filter(experimentName = exp) 
+    for files in result_list:  
+        files.category=None
+        files.save()
+    print exp
+    for m in motifs:  
+        m.z_score=None
+        m.t_value=None
+        m.p_value=None
+        m.q_value=None
+        m.save()
+    #result_list = FileDetail.objects.filter(experimentName = exp)
     if request.method == 'POST':
         categoryf = categoryform(request.POST)
         group1 = request.POST.getlist('group1')
         group2 = request.POST.getlist('group2')
-        print len(result_list)        
+        print result_list 
+        print group1    
         for g1 in group1:
             for i in range(len(result_list)): 
-                if g1 == str(result_list[i].fileName):                     
+                if g1 == str(result_list[i].fileName): 
+                    print "h1"
                     result_list[i].category ='0'
                     print result_list[i].category 
                     result_list[i].save()  
         for g2 in group2:
-            for i in range(len(result_list)): 
-                if g2 == str(result_list[i].fileName):                     
+            for i in range(len(result_list)):                 
+                if g2 == str(result_list[i].fileName):   
+                    print "h2"
                     result_list[i].category ='1'
                     print result_list[i].category 
                     result_list[i].save()   
                 
-        #context_dict['result_list'] = result_list
-        context_dict['expname'] = exp 
         return HttpResponseRedirect(reverse('rango:index', args=(exp,)))
+        #return redirect('index',exp)
                
     else:
         print "hello"
@@ -98,25 +107,37 @@ def categorySel(request,expname):
       
     return render(request, 'categorySel.html',context_dict)
 
-def IndexView(request,expname):
-    return render(request, 'index.html', {'expname': expname})
+def IndexView(request,expname): 
+    context_dict ={}
+    context_dict['expname']=expname
+    
+    return render(request, 'index.html',context_dict )
 
 def HeatView(request,expname): 
     exp = Experiment.objects.get(experimentName = expname)
-    files = FileDetail.objects.filter(experimentName = exp)
-    ind_file = [f.experimentName for f in files]
-    #motifs = MotifList.objects.filter(experimentName = ind_file[0])    
-    alp_vals = []
+    files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
+    individual = files[1].experimentName
     
+    #ind_file = [f.experimentName for f in files]
+    motifs = MotifList.objects.filter(experimentName = individual) 
+    print motifs
+    
+    alp_vals = []
     i =0
-    for individual in ind_file:        
-        motifs = individual.motiflist_set.all()  
+    for i in range(len(files)):        
+        #motifs = individual.motiflist_set.all() 
         alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
-        i +=1    
-    alpha_values = np.array(alp_vals,np.float) 
-    #Normalize alpha - value/sum
+        '''
+        i +=1
+        new_alp_vals = []
+        for av in alp_vals:
+            s = sum(av)            
+            nav = [a / s for a in av]            
+            new_alp_vals.append(nav)
+        alp_vals = new_alp_vals 
+        '''
+    alpha_values = np.array(alp_vals)
     alpha_values /= alpha_values.sum(axis=1)[:,None]
-    print alpha_values
     alpha_v = alpha_values
     
     #Normalize alpha - zscore
@@ -238,17 +259,28 @@ def HeatView(request,expname):
        
 def PlotView(request,expname):   
     exp = Experiment.objects.get(experimentName = expname)
-    files = FileDetail.objects.filter(experimentName = exp)
-    ind_file = [f.experimentName for f in files]
-    motifs = MotifList.objects.filter(experimentName = ind_file[0])    
+    files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
+    individual = files[1].experimentName
+    
+    #ind_file = [f.experimentName for f in files]
+    motifs = MotifList.objects.filter(experimentName = individual) 
+    print motifs
+    
     alp_vals = []
     i =0
-    for individual in ind_file:        
-        motifs = individual.motiflist_set.all()  
+    for i in range(len(files)):        
+        #motifs = individual.motiflist_set.all() 
         alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
+        '''
         i +=1
-    #print alp_vals    
-    alpha_values = np.array(alp_vals,np.float) 
+        new_alp_vals = []
+        for av in alp_vals:
+            s = sum(av)            
+            nav = [a / s for a in av]            
+            new_alp_vals.append(nav)
+        alp_vals = new_alp_vals 
+        '''
+    alpha_values = np.array(alp_vals)
     alpha_values /= alpha_values.sum(axis=1)[:,None]
     #print alpha_values
     category_seq =[]
@@ -263,7 +295,7 @@ def PlotView(request,expname):
         if files.category =='0':
             group1_index.append(i)
             fileColor.append('steelblue')
-        else:
+        elif files.category =='1':
             group2_index.append(i)
             fileColor.append('red')
     category_seq = np.array(category_seq)
@@ -279,7 +311,7 @@ def PlotView(request,expname):
     y = np.array(fileNames)
     alpha_sklearn = sklearn_pca.transform(alpha_values)
     data = []
-    motifs = MotifList.objects.filter(experimentName = ind_file[0]) 
+    #motifs = MotifList.objects.filter(experimentName = ind_file[0]) 
     array = np.array(sklearn_pca.components_)
     
     for name,color in zip(fileNames,fileColor):
@@ -298,7 +330,7 @@ def PlotView(request,expname):
                 )
     
     for i,motifs in zip(range(len(motifs)),motifs):
-               #motifs = MotifList.objects.filter(experimentName = exp) 
+                
                data.append(
                     go.Scatter(
                         x = [0,5*sklearn_pca.components_[0,i]],
@@ -347,7 +379,7 @@ def PlotView(request,expname):
     'exp':exp.experimentName,    
     'Name': 'Prinicipal Component Analysis'    
      }
-       
+     
     return render(request, 'plotlyPCA_HeatMap.html', context)   
     
     
@@ -356,26 +388,36 @@ def DendroView(request,expname):
      #   context = super(VarianceView, self).get_context_data(**kwargs)
      #   context['variance'] = plots.plotm()
     exp = Experiment.objects.get(experimentName = expname)
-    files = FileDetail.objects.filter(experimentName = exp)
-    ind_file = [f.experimentName for f in files]
-    motifs = MotifList.objects.filter(experimentName = ind_file[0])    
+    files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
+    #ind_file = [f.experimentName for f in files]
+    #motifs = MotifList.objects.filter(experimentName = ind_file[0])    
     alp_vals = []
     names = []
     i =0
-    for individual in ind_file:        
-        motifs = individual.motiflist_set.all() 
+    individual = files[1].experimentName
+    
+    #ind_file = [f.experimentName for f in files]
+    motifs = MotifList.objects.filter(experimentName = individual) 
+    print motifs
+    
+    alp_vals = []
+    i =0
+    for i in range(len(files)):        
+        #motifs = individual.motiflist_set.all() 
         alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
+        '''
         i +=1
         new_alp_vals = []
         for av in alp_vals:
-            s = sum(av)
+            s = sum(av)            
             nav = [a / s for a in av]            
-            new_alp_vals.append(nav)            
+            new_alp_vals.append(nav)
         alp_vals = new_alp_vals 
-      
+        '''
     alpha_values = np.array(alp_vals)
-    print alpha_values
+    alpha_values /= alpha_values.sum(axis=1)[:,None]
     motifs = MotifList.objects.filter(experimentName = exp)
+    
     for motifs in motifs:
          names.append(motifs.MotifName)
     
@@ -461,18 +503,22 @@ def DendroView(request,expname):
 
 def VarianceView(request,expname):
         exp = Experiment.objects.get(experimentName = expname)
-        files = FileDetail.objects.filter(experimentName = exp)
-        ind_file = [f.experimentName for f in files]
-        motifs = MotifList.objects.filter(experimentName = ind_file[0])    
+        files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
+        #print files
+        individual = files[1].experimentName
+    
+        #ind_file = [f.experimentName for f in files]
+        motifs = MotifList.objects.filter(experimentName = individual) 
+        #print motifs
+    
         alp_vals = []
         i =0
-        for individual in ind_file:        
-            motifs = individual.motiflist_set.all()  
+        for i in range(len(files)):        
+           #motifs = individual.motiflist_set.all() 
             alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
-            i +=1    
-        alpha_values = np.array(alp_vals,np.float) 
-        #Normalize alpha - value/sum
-        alpha_values /= alpha_values.sum(axis=1)[:,None] 
+        alpha_values = np.array(alp_vals)
+        alpha_values /= alpha_values.sum(axis=1)[:,None]
+        #print alpha_values
         #------CALCULATE MOTIF SCORE-------#
         category_seq =[]
         m_score=[]
@@ -482,31 +528,58 @@ def VarianceView(request,expname):
             category_seq.append(str(files.category))  
             if files.category =='0':
                 group1_index.append(i)
-            else:
+            elif files.category =='1':
                 group2_index.append(i)
-        category_seq = np.array(category_seq)
-        Motiflist = MotifList.objects.filter(experimentName = exp)
-        for i,alp in enumerate(alpha_values.T):
-        #for motifs in Motiflist:
-            a = np.array(alp)            
-            g1 = a[group1_index]
-            g2 = a[group2_index]
-            zscore = (g1.mean() - g2.mean()) / (g1.std() + g2.std())  #or use zscore method????
-            t, p = ttest_ind(g1, g2, equal_var=False)
-            m_score.append((zscore, t, p))
-        i =0        
-        for motifs,score in zip(Motiflist,m_score):
-        #     mscore_str = motifs.MotifName + " " + 
-            motifs.z_score = m_score[i][0]
-            motifs.t_value = m_score[i][1]
-            motifs.p_value = m_score[i][2]
+        #category_seq = np.array(category_seq)
+        #print group1_index, group2_index
+        #Motiflist = MotifList.objects.filter(experimentName = exp)
+        alpha2= np.array(alpha_values.T,np.float)
+        print alpha2
+        #print alpha_values
+        for i,alp in enumerate(alpha2):
+            #for m in motifs:
+                a = np.array(alp) 
+                g1 = a[group1_index]  
+                g2 = a[group2_index]
+                zscore = (g1.mean() - g2.mean()) / (g1.std() + g2.std())  #or use zscore method????
+                t, p = ttest_ind(g1, g2, equal_var=False)
+                m_score.append((i,zscore,t,p)) 
+                #m_score.append((m.MotifName,zscore,t,p)) 
+        s = np.array(m_score)
+        print s
+        sortm = np.array(sorted(m_score,key=itemgetter(3)))  
+        print sortm
+        #i =0 
+        
+        qval=[]
+        score_list =[]
+        for i in range(len(sortm)):
+            a = float(sortm[i][3]) * len(sortm)
+            b = a/(i+1)
+            score_list.append((sortm[i][0],sortm[i][1],sortm[i][2],sortm[i][3],b))
+        #print score_list
+        
+        score = np.array(sorted(score_list,key=itemgetter(0))) 
+        print score
+        i=0
+        for m in motifs:
+            m.z_score = score[i][1]
+            m.t_value = score[i][2]
+            m.p_value = score[i][3]
+            m.q_value = score[i][4]
             i +=1
-            motifs.save()  
-        motif = MotifList.objects.filter(experimentName = exp)    
+            m.save() 
+       
+        #motif_list.append([m.alphatable_set.all()[1].value for m in motif])
+        #print np.array(motif_list)    
+        #motif_matrix = sorted(motif_list, key=lambda k: k[2], reverse=False)
+        #motif_matrix = np.array(motif_matrix)
+        #print motif_matrix
         context={
-        'motif':motif,
+        'motif':motifs,
         'exp':exp.experimentName,    
         }
+        
         return render(request, 'variance.html', context)
 
 def register_page(request):

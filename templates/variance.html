@@ -3,7 +3,7 @@
 {{block.super}}
 <STYLE TYPE="text/css">
 <!--
-.dataTables_wrapper { font-size: 14px }   
+.dataTables_wrapper { font-size: 16px }   
 .dataTables_paginate span>span{
 border: 1px solid #77D5F7;
 color: #FFFFFF;
@@ -23,8 +23,8 @@ TD{background-color: #fff}
 <div class="container"> 
     <div class="jumbotron">
     <a href="/index/{{exp}}" class="previous">&laquo; Go back to Index</a>  
-    <h4>The data below shows the differential relevance between the two groups. </h4>
-   <h5 style="margin-bottom: 20px">z-score is obtained by calculating difference in means divided by the sum of their standard deviations and P-value is an output from t-test of two group. P-value should be compared with Q-value 0.14 in order to avoid any False positive values.</h5>
+    <h3>The data below shows the differential relevance between the two groups. </h3>
+   <h4 style="margin-bottom: 20px">z-score is obtained by calculating difference in means divided by the sum of their standard deviations and P-value is an output from t-test of two group. P-value should be compared with respective q-value in order to avoid any False positive values.</h4>
     <table id="motif" class="cell-border" cellspacing="0" width="100%">
         <thead>
             <tr>
@@ -33,6 +33,7 @@ TD{background-color: #fff}
                 <th>zscore</th>
                 <th>t-value</th>
                 <th>p-value</th>
+                <th>q-value</th>
             </tr>
         </thead>
         
@@ -53,6 +54,9 @@ TD{background-color: #fff}
                 </td> 
                 <td>
                 {{motif.p_value}} <br/> 
+                </td>
+                <td>
+                {{motif.q_value}} <br/> 
                 </td>
             </tr>
           {% endfor %}  
