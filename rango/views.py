@@ -25,6 +25,7 @@ import scipy
 from scipy.spatial.distance import pdist,squareform
 from django.contrib import messages
 from operator import itemgetter, attrgetter
+#import pdb; pdb.set_trace()
 
 #@login_required(login_url="login/")
 def home(request):
@@ -273,7 +274,6 @@ def PlotView(request,expname):
     alp_vals = []
     i =0
     for i in range(len(files)):        
-        #motifs = individual.motiflist_set.all() 
         alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
         '''
         i +=1
@@ -286,25 +286,19 @@ def PlotView(request,expname):
         '''
     alpha_values = np.array(alp_vals)
     alpha_values /= alpha_values.sum(axis=1)[:,None]
-    #print alpha_values
-    category_seq =[]
     fileNames=[]
     m_score=[]
     fileColor =[]
     group1_index=[]
     group2_index=[]
     for i,files in zip(range(len(files)),files):
-        fileNames.append(str(files.fileName))
-        category_seq.append(str(files.category))  
+        fileNames.append(str(files.fileName)) 
         if files.category =='0':
             group1_index.append(i)
             fileColor.append('steelblue')
         elif files.category =='1':
             group2_index.append(i)
             fileColor.append('red')
-    category_seq = np.array(category_seq)
-    grp = group1_index + group2_index
-    print category_seq
     Motiflist = MotifList.objects.filter(experimentName = exp)
   
     sklearn_pca = PCA(n_components = 2,whiten = True)
@@ -316,7 +310,7 @@ def PlotView(request,expname):
     alpha_sklearn = sklearn_pca.transform(alpha_values)
     data = []
     #motifs = MotifList.objects.filter(experimentName = ind_file[0]) 
-    array = np.array(sklearn_pca.components_)
+    #array = np.array(sklearn_pca.components_)
     
     for name,color in zip(fileNames,fileColor):
         #print name
@@ -350,21 +344,21 @@ def PlotView(request,expname):
     layout = go.Layout(
         showlegend=False,
         autosize=False,
-        width=600,
-        height=500,
+        width=1000,
+        height=800,
         
         xaxis=dict(
             title= 'PC1' + "(" + str(round(float(pc1),2)) + "% of variance)",          
             domain=[0, 0.85],
-            showgrid=False,
-            zeroline=False
+            showgrid=True,
+            zeroline=True
             
         ),
         yaxis=dict(
             title='PC2' + "(" + str(round(float(pc2),2)) + "% of variance)", 
             domain=[0, 0.85],
-            showgrid=False,
-            zeroline=False
+            showgrid=True,
+            zeroline=True
             
         ),
         margin=dict(
