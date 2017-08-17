@@ -39,11 +39,15 @@ def loadData(request):
                                          request.POST['resultId'],request.POST['fileNames'])
             Load_data.populateFileDetail(request.POST['experimentName'],
                                          request.POST['resultId'],request.POST['fileNames'])
-            Load_data.populateMotifList(request.POST['experimentName'],
-                                        request.POST['resultId'],request.POST['fileNames'])
-            Load_data.populateAlphaMatrix(request.POST['experimentName'],
+            responseLoad = Load_data.populateMotifList(request.POST['experimentName'],
+                                           request.POST['resultId'],request.POST['fileNames'])
+            if responseLoad is True:
+                     Load_data.populateAlphaMatrix(request.POST['experimentName'],
                                          request.POST['resultId'],request.POST['fileNames'])                                    
-            return HttpResponseRedirect(reverse('rango:search'))
+                     return HttpResponseRedirect(reverse('rango:search'))
+            else:
+                context_dict['decompform'] = decompform 
+                messages.error(request, "Some Fields are missing or Invalid!!")
         else:
             context_dict['decompform'] = decompform 
             messages.error(request, "Some Fields are missing or Invalid!!")

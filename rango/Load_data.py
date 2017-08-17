@@ -14,6 +14,8 @@ def populateFileDetail(experimentName,resultId,filename):
     print experiments
     for experiment in experiments:
         res_id = str(experiment.resultId).split('\n')
+        #link = 'http://ms2lda.org/decomposition/api/batch_results/{}'.format(res_id)
+        #print link 
         filename = str(experiment.fileNames).split('\n')
         for res_id,filename in zip(res_id,filename):
             FileDetail.objects.create(experimentName = experiment,resultId= res_id, fileName = filename,motif_count=0)
@@ -28,20 +30,24 @@ def populateMotifList(experimentName,resultId,filename):
         for file,i in zip(file,range(1)):
             #print file.resultId
             link ='http://ms2lda.org/decomposition/api/batch_results/{}'.format(file.resultId)
-            raw_data = urlopen(link).read()
-            url = json.loads(raw_data)
-            
-            url1 = url.get('alpha')
-            url2 = url.get('motifset')
-            print url2
-            alpha_value = sorted(url1, key=lambda k: k[0], reverse=False)
-        motif_list = np.transpose(np.array(alpha_value))[0]
-        print alpha_value
-        index =0
-        for i in range(len(motif_list)):    
-            #print motif_list[i]
-            MotifList.objects.create(MotifName = motif_list[i],experimentName = experiment,MotifId=i)
-        loadAnnotation(experiments,url2) 
+            if urlopen(link).getcode() is not 200:
+                experiments.delete()
+                file.delete()
+                return False
+            else:
+                raw_data = urlopen(link).read()
+                url = json.loads(raw_data)            
+                url1 = url.get('alpha')
+                url2 = url.get('motifset')
+                print url2
+                alpha_value = sorted(url1, key=lambda k: k[0], reverse=False)
+                motif_list = np.transpose(np.array(alpha_value))[0]
+                print alpha_value
+                index =0
+                for i in range(len(motif_list)):    
+                      MotifList.objects.create(MotifName = motif_list[i],experimentName = experiment,MotifId=i)
+                loadAnnotation(experiments,url2)
+                return True
         
 def populateAlphaMatrix(experimentName,resultId,filename):
     experiment = Experiment.objects.filter(experimentName = experimentName)
@@ -65,6 +71,7 @@ def populateAlphaMatrix(experimentName,resultId,filename):
                            
     
 def loadAnnotation(experimentName,motifset):
+    print "hello"
     annotation = []  
     url ='http://ms2lda.org/decomposition/api/get_motifset_annotations/'
     args = {'motifset':motifset}
