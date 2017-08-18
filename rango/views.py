@@ -73,7 +73,6 @@ def categorySel(request,expname):
     for files in result_list:  
         files.category=None
         files.save()
-    print exp
     for m in motifs:  
         m.z_score=None
         m.t_value=None
@@ -85,22 +84,16 @@ def categorySel(request,expname):
         categoryf = categoryform(request.POST)
         group1 = request.POST.getlist('group1')
         group2 = request.POST.getlist('group2')
-        print result_list 
-        print group1    
         for g1 in group1:
-            for i in range(len(result_list)): 
-                if g1 == str(result_list[i].fileName): 
-                    print "h1"
-                    result_list[i].category ='0'
-                    print result_list[i].category 
-                    result_list[i].save()  
+            for f in result_list: 
+                if g1 == f.fileName: 
+                    f.category ='0' 
+                    f.save()             
         for g2 in group2:
-            for i in range(len(result_list)):                 
-                if g2 == str(result_list[i].fileName):   
-                    print "h2"
-                    result_list[i].category ='1'
-                    print result_list[i].category 
-                    result_list[i].save()   
+            for f in result_list: 
+                if g2 == f.fileName: 
+                    f.category ='1' 
+                    f.save()    
                 
         return HttpResponseRedirect(reverse('rango:index', args=(exp,)))
         #return redirect('index',exp)
@@ -125,7 +118,6 @@ def HeatView(request,expname):
     
     #ind_file = [f.experimentName for f in files]
     motifs = MotifList.objects.filter(experimentName = individual) 
-    print motifs
     
     alp_vals = []
     i =0
@@ -269,7 +261,6 @@ def PlotView(request,expname):
     
     #ind_file = [f.experimentName for f in files]
     motifs = MotifList.objects.filter(experimentName = individual) 
-    print motifs
     
     alp_vals = []
     i =0
@@ -299,8 +290,7 @@ def PlotView(request,expname):
         elif files.category =='1':
             group2_index.append(i)
             fileColor.append('red')
-    Motiflist = MotifList.objects.filter(experimentName = exp)
-  
+    
     sklearn_pca = PCA(n_components = 2,whiten = True)
     sklearn_pca.fit(alpha_values)
     var = sklearn_pca.explained_variance_ratio_
