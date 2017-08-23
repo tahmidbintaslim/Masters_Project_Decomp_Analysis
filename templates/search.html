@@ -18,7 +18,11 @@
 
 				{% endfor %}
 				
-			{% endif %}
+			
+            {% else %}
+             <h2 style="margin-left: 20px;">Oops!! looks like no experiment is available at the moment!!</h2>
+             <p style="margin-left: 20px;font-size:100%;"><a href="/loadData">Click here</a> to go to upload decomposition files</p> 
+            {% endif %}
 			</div>
 </div>
 		{% endblock %}

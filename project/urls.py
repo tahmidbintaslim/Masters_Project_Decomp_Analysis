@@ -20,8 +20,8 @@ from django.contrib.auth import views as auth_views
 #from django.contrib.auth.views import login, logout
 from django.conf.urls import include
 from django.views.generic.base import RedirectView
-from rango import views
-#from rango.forms import LoginForm
+from decomp import views
+#from decomp.forms import LoginForm
 
 
 urlpatterns = [
@@ -30,7 +30,7 @@ urlpatterns = [
     #(r'^logout/$', logout,{'template_name':'logout.html'}),
     #url(r'^index/$', views.IndexView.as_view(), name='index'),
     url(r'^admin/', admin.site.urls),
-    url(r'', include('rango.urls',namespace="rango")),
+    url(r'', include('decomp.urls',namespace="decomp")),
     #url(r'^expid/(?P<experiment_id>\w+)/$', views.expid, name='expid'),
     #url(r'^rango/', include('rango.urls')),
     #url(r'^rango/', include('rango.urls', namespace="rango")),
