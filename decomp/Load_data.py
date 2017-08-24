@@ -6,12 +6,8 @@ import numpy as np
 import requests
 
 def populateExperiment(experimentName,description,resultId,filename): 
-    if '\r\n' in resultId and '\r\n' in filename:
         experiment = Experiment.objects.get_or_create(experimentName = experimentName, description=description,
                                                   resultId = resultId,fileNames = filename)
-        return True  
-    else:
-        return False
 
 def populateFileDetail(experimentName,resultId,filename):
         experiment = Experiment.objects.get(experimentName=experimentName)
@@ -22,13 +18,12 @@ def populateFileDetail(experimentName,resultId,filename):
                 
 def populateMotifList(experimentName):
             experiment = Experiment.objects.get(experimentName=experimentName)
-
             file = FileDetail.objects.filter(experimentName=experiment)
             index =1
             alpha_value = []
             link ='http://ms2lda.org/decomposition/api/batch_results/{}'.format(file[0].resultId)
             if urlopen(link).getcode() is not 200:
-                experiments.delete()
+                experiment.delete()
                 file.delete()
                 return False
             else:

@@ -39,22 +39,19 @@ def loadData(request):
     if request.method == "POST":
         decompform = forms.createExpform(request.POST)        
         if decompform.is_valid():              
-            responseLoad = Load_data.populateExperiment(request.POST['experimentName'],request.POST['description'],
+            Load_data.populateExperiment(request.POST['experimentName'],request.POST['description'],
                                          request.POST['resultId'],request.POST['fileNames'])
-            if responseLoad is True:
-                    Load_data.populateFileDetail(request.POST['experimentName'],
+            
+            Load_data.populateFileDetail(request.POST['experimentName'],
                                          request.POST['resultId'],request.POST['fileNames'])
-                    responseLoad = Load_data.populateMotifList(request.POST['experimentName'])
+            responseLoad = Load_data.populateMotifList(request.POST['experimentName'])
                                            
-                    if responseLoad is True:
-                            Load_data.populateAlphaMatrix(request.POST['experimentName'])                                                    
-                            return HttpResponseRedirect(reverse('decomp:search'))
-                    else:
-                        context_dict['decompform'] = decompform 
-                        messages.error(request, "Some Fields are missing or Invalid!!")    
+            if responseLoad is True:
+                Load_data.populateAlphaMatrix(request.POST['experimentName'])                                                    
+                return HttpResponseRedirect(reverse('decomp:search'))
             else:
                 context_dict['decompform'] = decompform 
-                messages.error(request, "Invalid input format!!")
+                messages.error(request, "Invalid result id provided!!")    
         else:
             context_dict['decompform'] = decompform 
             messages.error(request, "Some Fields are missing or Invalid!!")
@@ -70,9 +67,7 @@ def search(request):
     return render(request, 'search.html', context_dict)
 
 def categorySel(request,expname):
-    #print expname
     context_dict = {}
-    #expn = str(expname)
     exp = Experiment.objects.get(experimentName = expname)
     exp.hclus = None
     exp.pca = None
@@ -89,7 +84,6 @@ def categorySel(request,expname):
         m.p_value=None
         m.q_value=None
         m.save()
-    #result_list = FileDetail.objects.filter(experimentName = exp)
     if request.method == 'POST':
         categoryf = categoryform(request.POST)
         group1 = request.POST.getlist('group1')
@@ -103,13 +97,9 @@ def categorySel(request,expname):
             for f in result_list: 
                 if g2 == f.fileName: 
                     f.category ='1' 
-                    f.save()    
-                
-        return HttpResponseRedirect(reverse('decomp:index', args=(exp,)))
-        #return redirect('index',exp)
-               
+                    f.save()            
+        return HttpResponseRedirect(reverse('decomp:index', args=(exp,)))    
     else:
-        print "hello"
         context_dict['result_list'] = result_list
         context_dict['exp'] = exp
       
@@ -127,15 +117,12 @@ def HeatView(request,expname):
     if exp.heatmap is None:
         files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
         individual = files[1].experimentName
-    
-        #ind_file = [f.experimentName for f in files]
         motifs = MotifList.objects.filter(experimentName = individual) 
-    
         alp_vals = []
         i =0
         for i in range(len(files)):        
-        #motifs = individual.motiflist_set.all() 
             alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
+        
         alpha_values = np.array(alp_vals)
         alpha_values /= alpha_values.sum(axis=1)[:,None]
         alpha_v = alpha_values
@@ -153,7 +140,7 @@ def HeatView(request,expname):
         data_array2 = norm_alpha
     
         # Create Up Dendrogram
-        figure = FF.create_dendrogram(data_array, orientation='bottom', labels=labels)
+        figure = FF.create_dendrogram(data_array, orientation='bottom')
         for i in range(len(figure['data'])):
             figure['data'][i]['yaxis'] = 'y2'
 
@@ -165,25 +152,39 @@ def HeatView(request,expname):
         figure['data'].extend(dendro_side['data'])
 
         # Create Heatmap
-        dendro_leaves = dendro_side['layout']['yaxis']['ticktext']
-        dendro_leaves = list(map(int, dendro_leaves))
-        data_dist = pdist(data_array)
-        heat_data = squareform(data_dist)
-        heat_data = heat_data[dendro_leaves,:]
-        heat_data = heat_data[dendro_leaves]
+        dendro_leaves_side = dendro_side['layout']['yaxis']['ticktext']
+        dendro_leaves_up = figure['layout']['xaxis']['ticktext']
+        
+        dendro_leaves_side = list(map(int, dendro_leaves_side))
+        dendro_leaves_up = list(map(int,dendro_leaves_up))
+        
+        print dendro_leaves_up
+        
+        heatdata = data_array2[dendro_leaves_side,:]
+        heat_data2 = heatdata[:,dendro_leaves_up]
         filelabel =[]
         filelab =[]
+        
+        motiflab =[]
+        motiflist=[]
+        
+        for m in motifs:
+            motiflab.append(m.MotifName)
+            
+        for dendro_leaves in dendro_leaves_up:
+            motiflist.append(motiflab[dendro_leaves])    
+        
         for files in files:
             filelabel.append(files.fileName)
     
-        for dendro_leaves in dendro_leaves:
+        for dendro_leaves in dendro_leaves_side:
             filelab.append(filelabel[dendro_leaves])
         
         heatmap = go.Data([
                     go.Heatmap(
-                            x = dendro_leaves,
-                            y = dendro_leaves,
-                            z = heat_data,
+                            x = dendro_leaves_up,
+                            y = dendro_leaves_side,
+                            z = heat_data2,
                             colorscale = 'YIGnBu'
                               )
                           ])
@@ -209,6 +210,7 @@ def HeatView(request,expname):
                                   'zeroline': False,
                                   'showticklabels': True,
                                   'ticks':"",
+                                  'ticktext': motiflist,
                                   'tickfont': dict(
             family='Old Standard TT, serif',
             size=8,
@@ -253,7 +255,7 @@ def HeatView(request,expname):
         'Name': 'Dendrogram Heatmap'     
          }
     else:
-        print "here"
+        
         context={
         'plot':exp.heatmap,
         'exp':exp.experimentName,    
@@ -273,15 +275,7 @@ def PcaView(request,expname):
     i =0
     for i in range(len(files)):        
         alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
-        '''
-        i +=1
-        new_alp_vals = []
-        for av in alp_vals:
-            s = sum(av)            
-            nav = [a / s for a in av]            
-            new_alp_vals.append(nav)
-        alp_vals = new_alp_vals 
-        '''
+   
     alpha_values = np.array(alp_vals)
     alpha_values /= alpha_values.sum(axis=1)[:,None]
     fileNames=[]
@@ -306,12 +300,9 @@ def PcaView(request,expname):
     y = np.array(fileNames)
     alpha_sklearn = sklearn_pca.transform(alpha_values)
     data = []
-    #motifs = MotifList.objects.filter(experimentName = ind_file[0]) 
-    #array = np.array(sklearn_pca.components_)
     
     for name,color in zip(fileNames,fileColor):
-        #print name
-        #print y
+        
            data.append(go.Scatter(
                         x = alpha_sklearn[(y==name),0],
                         y = alpha_sklearn[(y==name),1],
@@ -321,6 +312,7 @@ def PcaView(request,expname):
                             size = 10,
                             color = color
                             ),
+                       showlegend = True,
                     )
                 )
     
@@ -367,6 +359,7 @@ def PcaView(request,expname):
     )
     fig = go.Figure(data=data, layout=layout)
     pca_div = plot(fig,output_type='div', include_plotlyjs=False)
+    #print pca_div
     exp.pca = pca_div
     exp.save()
     context={
