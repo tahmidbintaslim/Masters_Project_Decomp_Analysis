@@ -107,8 +107,7 @@ def categorySel(request,expname):
 
 def IndexView(request,expname): 
     context_dict ={}
-    context_dict['expname']=expname
-    
+    context_dict['expname']=expname    
     return render(request, 'index.html',context_dict )
 
 def HeatView(request,expname): 
@@ -266,9 +265,8 @@ def HeatView(request,expname):
 def PcaView(request,expname):   
     exp = Experiment.objects.get(experimentName = expname)
     files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
-    individual = files[1].experimentName
-    
-    #ind_file = [f.experimentName for f in files]
+    individual = files[0].experimentName
+   
     motifs = MotifList.objects.filter(experimentName = individual) 
     
     alp_vals = []
@@ -359,7 +357,6 @@ def PcaView(request,expname):
     )
     fig = go.Figure(data=data, layout=layout)
     pca_div = plot(fig,output_type='div', include_plotlyjs=False)
-    #print pca_div
     exp.pca = pca_div
     exp.save()
     context={
@@ -372,36 +369,17 @@ def PcaView(request,expname):
     
     
 def DendroView(request,expname):
-        # Call the base implementation first to get a context
-     #   context = super(VarianceView, self).get_context_data(**kwargs)
-     #   context['variance'] = plots.plotm()
     exp = Experiment.objects.get(experimentName = expname)
-    files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
-    #ind_file = [f.experimentName for f in files]
-    #motifs = MotifList.objects.filter(experimentName = ind_file[0])    
+    files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)  
     alp_vals = []
     names = []
-    i =0
-    individual = files[1].experimentName
-    
-    #ind_file = [f.experimentName for f in files]
+    individual = files[0].experimentName
     motifs = MotifList.objects.filter(experimentName = individual) 
-    print motifs
     
     alp_vals = []
     i =0
     for i in range(len(files)):        
-        #motifs = individual.motiflist_set.all() 
         alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
-        '''
-        i +=1
-        new_alp_vals = []
-        for av in alp_vals:
-            s = sum(av)            
-            nav = [a / s for a in av]            
-            new_alp_vals.append(nav)
-        alp_vals = new_alp_vals 
-        '''
     alpha_values = np.array(alp_vals)
     alpha_values /= alpha_values.sum(axis=1)[:,None]
     motifs = MotifList.objects.filter(experimentName = exp)
@@ -411,16 +389,14 @@ def DendroView(request,expname):
     
     dendro = FF.create_dendrogram(alpha_values.T,orientation='left',labels = names)
     dendro['layout'].update({'width':5000, 'height':5000})
-    #plot(dendro)
-    
-    
+       
 #------D3 Dendrogram------#
-    print alpha_values.shape
     dataMatrix = np.array(alpha_values.T)
     distMat = scipy.spatial.distance.pdist( dataMatrix )
 
     # Cluster hierarchicaly using scipy
     clusters = scipy.cluster.hierarchy.linkage(distMat, method='complete')
+    
     import sys
     sys.setrecursionlimit(10000)
 
@@ -428,18 +404,12 @@ def DendroView(request,expname):
     labels = list(names)
     id2name = dict(zip(range(len(labels)), labels))
 
-    # Draw dendrogram using matplotlib to scipy-dendrogram.pdf
-    #scipy.cluster.hierarchy.dendrogram(clusters, labels=labels, orientation='right')
-    #plt.savefig("scipy-dendrogram.png")
-
 # Create a nested dictionary from the ClusterNode's returned by SciPy
     def add_node(node, parent ):
-        # First create the new node and append it to its parent's children
-    
+        # First create the new node and append it to its parent's children    
         newNode = dict( node_id=node.id, children=[] )
-        #print newNode
         parent["children"].append( newNode )
-        #print parent
+  
         # Recursively add the current node's children
         if node.left : add_node( node.left, newNode )
         if node.right: add_node( node.right, newNode )
@@ -454,16 +424,10 @@ def DendroView(request,expname):
     def label_tree( n ):
     # If the node is a leaf, then we have its name
         if len(n["children"]) == 0:
-            leafNames = [ id2name[n["node_id"]] ]
-            #print "0"
-            #print  leafNames 
-            # If not, flatten all the leaves in the node's subtree
-            #elif len(n["children"]) ==2: 
-             #   leafNames = ""
+            leafNames = [ id2name[n["node_id"]] ]            
+            # If not, flatten all the leaves in the node's subtree            
         else:
             leafNames = reduce(lambda x, y: x + label_tree(y), n["children"], [])
-            #print "not"
-            #print leafNames
             # Delete the node id since we don't need it anymore and
             # it makes for cleaner JSON
         del n["node_id"]
@@ -472,17 +436,14 @@ def DendroView(request,expname):
         n["name"] = name = "-".join(sorted(map(str, leafNames)))
 
         return leafNames
-
+    
     label_tree( d3Dendro["children"][0] )
+    
 # Output to JSON
     json.dump(d3Dendro, open("d3-dendrogram.json", "w"), sort_keys=True, indent=4)
     exp.hclus = open("d3-dendrogram.json", "r")
     with open("d3-dendrogram.json",'r') as f:
         exp.hclus = json.load(f)
-
-    
-    #hclus_div = plot(dendro,output_type='div', include_plotlyjs=False)
-    #exp.hclus = hclus_div
     exp.save()
     context={
         'exp':exp,
@@ -491,22 +452,16 @@ def DendroView(request,expname):
 
 def ScoreView(request,expname):
         exp = Experiment.objects.get(experimentName = expname)
-        files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
-        #print files
-        individual = files[1].experimentName
-    
-        #ind_file = [f.experimentName for f in files]
+        files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)        
+        individual = files[0].experimentName
         motifs = MotifList.objects.filter(experimentName = individual) 
-        #print motifs
-    
         alp_vals = []
         i =0
         for i in range(len(files)):        
-           #motifs = individual.motiflist_set.all() 
             alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
         alpha_values = np.array(alp_vals)
         alpha_values /= alpha_values.sum(axis=1)[:,None]
-        #print alpha_values
+        
         #------CALCULATE MOTIF SCORE-------#
         category_seq =[]
         m_score=[]
@@ -518,37 +473,26 @@ def ScoreView(request,expname):
                 group1_index.append(i)
             elif files.category =='1':
                 group2_index.append(i)
-        #category_seq = np.array(category_seq)
-        #print group1_index, group2_index
-        #Motiflist = MotifList.objects.filter(experimentName = exp)
         alpha2= np.array(alpha_values.T,np.float)
-        print alpha2
-        #print alpha_values
         for i,alp in enumerate(alpha2):
-            #for m in motifs:
                 a = np.array(alp) 
                 g1 = a[group1_index]  
                 g2 = a[group2_index]
-                zscore = (g1.mean() - g2.mean()) / (g1.std() + g2.std())  #or use zscore method????
+                zscore = (g1.mean() - g2.mean()) / (g1.std() + g2.std())  
                 t, p = ttest_ind(g1, g2, equal_var=False)
                 m_score.append((i,zscore,t,p)) 
-                #m_score.append((m.MotifName,zscore,t,p)) 
         s = np.array(m_score)
-        print s
         sortm = np.array(sorted(m_score,key=itemgetter(3)))  
-        print sortm
-        #i =0 
-        
+   
         qval=[]
         score_list =[]
         for i in range(len(sortm)):
             a = float(sortm[i][3]) * len(sortm)
             b = a/(i+1)
             score_list.append((sortm[i][0],sortm[i][1],sortm[i][2],sortm[i][3],b))
-        #print score_list
         
         score = np.array(sorted(score_list,key=itemgetter(0))) 
-        print score
+        
         i=0
         for m in motifs:
             m.z_score = score[i][1]
@@ -557,12 +501,6 @@ def ScoreView(request,expname):
             m.q_value = score[i][4]
             i +=1
             m.save() 
-       
-        #motif_list.append([m.alphatable_set.all()[1].value for m in motif])
-        #print np.array(motif_list)    
-        #motif_matrix = sorted(motif_list, key=lambda k: k[2], reverse=False)
-        #motif_matrix = np.array(motif_matrix)
-        #print motif_matrix
         context={
         'motif':motifs,
         'exp':exp.experimentName,    
@@ -570,6 +508,7 @@ def ScoreView(request,expname):
         
         return render(request, 'score.html', context)
 
+'''
 def register_page(request):
     if request.method == 'POST':
         form = forms.RegistrationForm(request.POST)
@@ -582,3 +521,4 @@ def register_page(request):
     form = forms.RegistrationForm()
     variables = RequestContext(request, {'form': form})
     return render_to_response('register.html',variables)    
+'''

@@ -17,7 +17,6 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-#from django.contrib.auth.views import login, logout
 from django.conf.urls import include
 from django.views.generic.base import RedirectView
 from decomp import views
@@ -25,20 +24,8 @@ from decomp import views
 
 
 urlpatterns = [
-    #
-    #url(r'^rango/', include('rango.urls')), 
-    #(r'^logout/$', logout,{'template_name':'logout.html'}),
-    #url(r'^index/$', views.IndexView.as_view(), name='index'),
     url(r'^admin/', admin.site.urls),
     url(r'', include('decomp.urls',namespace="decomp")),
-    #url(r'^expid/(?P<experiment_id>\w+)/$', views.expid, name='expid'),
-    #url(r'^rango/', include('rango.urls')),
-    #url(r'^rango/', include('rango.urls', namespace="rango")),
-    #url(r'^$', RedirectView.as_view(url='/rango/')),
-    #url(r'^login/$', auth_views.login, {'template_name': 'login.html', 'authentication_form': LoginForm}),
-    #url(r'^logout/$', auth_views.logout, {'next_page': '/login'}),
-    #url(r'^register/$', auth_views.logout, {'next_page': '/login'}),
-    #url(r'^accounts/login/$', views.LoginView.as_view(), name='login'),
-    #url(r'^basic/', include('basic.urls')),
+   
 ]
 

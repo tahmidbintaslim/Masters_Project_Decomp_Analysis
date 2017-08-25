@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'decomp',
     #'django_extensions',
-    #'Load_Data',
     
 ]
 

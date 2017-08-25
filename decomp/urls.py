@@ -2,11 +2,10 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns =[
-      url(r'^register/$', views.register_page), 
+       
       url(r'^search/$', views.search, name='search'),  
       url(r'^guide/$', views.guide, name='guide'),  
       url(r'^categorySel/(?P<expname>[\w\s\-]+)/$', views.categorySel, name='categorySel'),
-      #url(r'^index/(?P<expname>[\w\-]+)/$', views.IndexView,name='index'),
       url(r'^index/(?P<expname>[\w\s\-]+)/$', views.IndexView,name='index'),
       url(r'^$', views.home, name='home'),
       url(r'^plotv/(?P<expname>[\w\s\-]+)/$', views.PcaView, name='plotv'),
