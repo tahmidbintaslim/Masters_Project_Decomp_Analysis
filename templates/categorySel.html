@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block head %}
-
+<!-- Adopted from https://github.com/VoidCanvas/pair-select -->
     <style type="text/css">
         
         .select{
@@ -28,6 +28,7 @@
 <script src="https://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
 <script type='text/javascript' src='{% static "js/pair-select.min.js" %}'></script>
 <script type="text/javascript">
+    //Validate if sample data categorized correctly. if not display error messages on webpage
         function validate()
         {
             

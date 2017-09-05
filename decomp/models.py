@@ -3,7 +3,10 @@ import datetime
 from django.contrib.auth.models import User
 from django.db import models
 from django.conf import settings
-   
+
+# Declare tables/models here
+
+# New decomposition experiment details
 class Experiment(models.Model):
     experimentName = models.TextField(max_length=128, unique=True)
     description = models.TextField(null=True)
@@ -15,7 +18,8 @@ class Experiment(models.Model):
     
     def __unicode__(self):
         return self.experimentName
-    
+
+# Sample files detail    
 class FileDetail(models.Model):
     experimentName = models.ForeignKey(Experiment)
     resultId = models.TextField()
@@ -24,7 +28,8 @@ class FileDetail(models.Model):
     
     def __str__(self):
         return self.fileName
-    
+
+# Available motif in sample and their differential prevalence details   
 class MotifList(models.Model):
     MotifName = models.TextField()
     experimentName = models.ForeignKey(Experiment)
@@ -37,7 +42,8 @@ class MotifList(models.Model):
     
     def __unicode__(self):
         return self.MotifName
-    
+
+# Motifs and their prevalence values   
 class AlphaTable(models.Model):
     mass2motif = models.ForeignKey(MotifList)
     fileName = models.ForeignKey(FileDetail)

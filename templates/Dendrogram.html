@@ -3,6 +3,7 @@
 {% block head %}
 {{block.super}}
 <meta charset="utf-8">
+<!-- Adopted from https://bl.ocks.org -->
 <style>
 .node circle {
   fill: #abc;
@@ -52,8 +53,7 @@ var svg = d3.select("body").append("svg")
       .enter().append("path")       
       .attr("class","link")       
       .attr("d", diagonal);
-                                               
-                                                 
+                                             
   const linkElements = svg.append('g')
   .selectAll('line')
   .data(links)
@@ -64,18 +64,14 @@ var svg = d3.select("body").append("svg")
   var node = svg.selectAll(".node")
       .data(nodes)
       .enter().append("g")
-      //.on("click", click)
       .attr("class", "node")
+     //Display node information on mouseover, text bold and increase radius of node circle
       .on("mouseover", function(d) {
-       //.style('stroke', '#e08ab4')
-       //link.style("stroke", function(d) { return color(d.source.depth); });
-       var g = d3.select(this); // The node
-          // The class is used to remove the additional text later
-        
-    d3.select(this).select("circle").transition()
+      var g = d3.select(this); 
+      d3.select(this).select("circle").transition()
         .duration(750)
         .attr("r", 16)
-        .style("fill", "lightsteelblue");   
+        .style("fill", "lightsteelblue");  
        var info = g.append('text')
              .classed('info', true)
              .attr('x', 20)
@@ -92,8 +88,7 @@ var svg = d3.select("body").append("svg")
         .style("fill", "lightsteelblue");  
         })
       .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
-   
-  
+    //Original node circles
     node.append("circle")
       .attr("r", 4.5);
                                                
@@ -102,6 +97,7 @@ var svg = d3.select("body").append("svg")
       .attr("dy", 3)
       .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
       .text(function(d) { return d.children ? "" : d.name });
+                                                 
 function colorNode(name){
               //iterate through all the dom and get the DOM which has the data
               var node = d3.selectAll(".node")[0].filter(function(d){
@@ -118,7 +114,6 @@ function colorLink(src,tgt){
               //for the filtered link make the stroke red.
               d3.selectAll(link).style("stroke", "red");
             }                                                 
-</script>
-    
-    </body>
+</script>  
+</body>
 {% endblock %}    

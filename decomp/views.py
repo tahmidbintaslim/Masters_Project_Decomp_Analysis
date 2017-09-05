@@ -28,12 +28,16 @@ from operator import itemgetter, attrgetter
 #import pdb; pdb.set_trace()
 
 #@login_required(login_url="login/")
+
+#Home page
 def home(request):
     return render(request,"base.html") 
 
+#User Guide - Instructions on using web tool
 def guide(request):
     return render(request,"guide.html") 
 
+#Create new decomposition experiment
 def loadData(request):
     context_dict = {}    
     if request.method == "POST":
@@ -45,7 +49,8 @@ def loadData(request):
             Load_data.populateFileDetail(request.POST['experimentName'],
                                          request.POST['resultId'],request.POST['fileNames'])
             responseLoad = Load_data.populateMotifList(request.POST['experimentName'])
-                                           
+            
+            # if result IDs are valid, then proceed ahead; else display error message
             if responseLoad is True:
                 Load_data.populateAlphaMatrix(request.POST['experimentName'])                                                    
                 return HttpResponseRedirect(reverse('decomp:search'))
@@ -61,20 +66,24 @@ def loadData(request):
         
     return render(request, 'loadData.html', context_dict) 
 
+# Display all available experiment
 def search(request):
     context_dict ={}
     context_dict['result_list'] = Experiment.objects.all()
     return render(request, 'search.html', context_dict)
 
+# Categorized experiment-sample data after removing previous analysis
 def categorySel(request,expname):
     context_dict = {}
     exp = Experiment.objects.get(experimentName = expname)
+    #Remove experiments plot information from database
     exp.hclus = None
     exp.pca = None
     exp.heatmap=None
     exp.save()
     result_list = FileDetail.objects.filter(experimentName = exp)
     motifs = MotifList.objects.filter(experimentName = exp) 
+    #Remove previously calculated/entered data - categorization information and motif prevelance scores
     for files in result_list:  
         files.category=None
         files.save()
@@ -84,6 +93,7 @@ def categorySel(request,expname):
         m.p_value=None
         m.q_value=None
         m.save()
+    #Categorize selected sample files    
     if request.method == 'POST':
         categoryf = categoryform(request.POST)
         group1 = request.POST.getlist('group1')
@@ -105,11 +115,13 @@ def categorySel(request,expname):
       
     return render(request, 'categorySel.html',context_dict)
 
+# Display all available tools
 def IndexView(request,expname): 
     context_dict ={}
     context_dict['expname']=expname    
     return render(request, 'index.html',context_dict )
 
+# Create HeatMap dendrogram
 def HeatView(request,expname): 
     exp = Experiment.objects.get(experimentName = expname)
   
@@ -123,10 +135,12 @@ def HeatView(request,expname):
             alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
         
         alpha_values = np.array(alp_vals)
+        
+        #Normalize alpha - sum 1
         alpha_values /= alpha_values.sum(axis=1)[:,None]
         alpha_v = alpha_values
     
-        #Normalize alpha - zscore
+        #Normalize alpha - using zscore
         norm_alpha = (alpha_v - (np.mean(alpha_v, axis=0)))/np.std(alpha_v, axis=0) 
     
         labels =[]
@@ -138,12 +152,12 @@ def HeatView(request,expname):
         data_array = norm_alpha.T
         data_array2 = norm_alpha
     
-        # Create Up Dendrogram
+        # Create Up Dendrogram- Motifs dendrogram
         figure = FF.create_dendrogram(data_array, orientation='bottom')
         for i in range(len(figure['data'])):
             figure['data'][i]['yaxis'] = 'y2'
 
-        # Create Side Dendrogram
+        # Create Side Dendrogram- Sample dendrogram
         dendro_side = FF.create_dendrogram(data_array2, orientation='right')
         for i in range(len(dendro_side['data'])):
             dendro_side['data'][i]['xaxis'] = 'x2'
@@ -157,10 +171,10 @@ def HeatView(request,expname):
         dendro_leaves_side = list(map(int, dendro_leaves_side))
         dendro_leaves_up = list(map(int,dendro_leaves_up))
         
-        print dendro_leaves_up
-        
         heatdata = data_array2[dendro_leaves_side,:]
         heat_data2 = heatdata[:,dendro_leaves_up]
+        
+        # Creating labels for sample and motifs dendrogram
         filelabel =[]
         filelab =[]
         
@@ -244,7 +258,7 @@ def HeatView(request,expname):
                                    'showticklabels': False,
                                    'ticks':""}})
 
-        # Plot!
+        # Plot - save heatmap data in database
         heat_div = plot(figure, output_type='div')
         exp.heatmap = heat_div
         exp.save()
@@ -253,15 +267,15 @@ def HeatView(request,expname):
         'exp':exp.experimentName,    
         'Name': 'Dendrogram Heatmap'     
          }
-    else:
-        
+    else:       
         context={
         'plot':exp.heatmap,
         'exp':exp.experimentName,    
         'Name': 'Dendrogram Heatmap'     
          }
     return render(request, 'plotlyPCA_HeatMap.html', context)
-       
+
+# Create PCA Analysis
 def PcaView(request,expname):   
     exp = Experiment.objects.get(experimentName = expname)
     files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)
@@ -272,10 +286,12 @@ def PcaView(request,expname):
     alp_vals = []
     i =0
     for i in range(len(files)):        
-        alp_vals.append([m.alphatable_set.all()[i].value for m in motifs]) 
-   
+        alp_vals.append([m.alphatable_set.all()[i].value for m in motifs])    
     alpha_values = np.array(alp_vals)
+    
+    #Normalize alpha - sum 1
     alpha_values /= alpha_values.sum(axis=1)[:,None]
+    
     fileNames=[]
     m_score=[]
     fileColor =[]
@@ -289,7 +305,8 @@ def PcaView(request,expname):
         elif files.category =='1':
             group2_index.append(i)
             fileColor.append('red')
-    
+            
+    # Component Analysis
     sklearn_pca = PCA(n_components = 2,whiten = True)
     sklearn_pca.fit(alpha_values)
     var = sklearn_pca.explained_variance_ratio_
@@ -299,8 +316,8 @@ def PcaView(request,expname):
     alpha_sklearn = sklearn_pca.transform(alpha_values)
     data = []
     
-    for name,color in zip(fileNames,fileColor):
-        
+    # Scatter components/sample data
+    for name,color in zip(fileNames,fileColor):       
            data.append(go.Scatter(
                         x = alpha_sklearn[(y==name),0],
                         y = alpha_sklearn[(y==name),1],
@@ -314,8 +331,8 @@ def PcaView(request,expname):
                     )
                 )
     
-    for i,motifs in zip(range(len(motifs)),motifs):
-                
+    #Motifs prevalence
+    for i,motifs in zip(range(len(motifs)),motifs):                
                data.append(
                     go.Scatter(
                         x = [0,5*sklearn_pca.components_[0,i]],
@@ -355,6 +372,7 @@ def PcaView(request,expname):
         bargap=0,
        
     )
+    #plot pca -save on database
     fig = go.Figure(data=data, layout=layout)
     pca_div = plot(fig,output_type='div', include_plotlyjs=False)
     exp.pca = pca_div
@@ -367,7 +385,7 @@ def PcaView(request,expname):
      
     return render(request, 'plotlyPCA_HeatMap.html', context)    
     
-    
+# Create d3 dendrogram - Referenced from https://gist.github.com/mdml/7537455   
 def DendroView(request,expname):
     exp = Experiment.objects.get(experimentName = expname)
     files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)  
@@ -390,7 +408,7 @@ def DendroView(request,expname):
     dendro = FF.create_dendrogram(alpha_values.T,orientation='left',labels = names)
     dendro['layout'].update({'width':5000, 'height':5000})
        
-#------D3 Dendrogram------#
+    #------D3 Dendrogram------#
     dataMatrix = np.array(alpha_values.T)
     distMat = scipy.spatial.distance.pdist( dataMatrix )
 
@@ -404,7 +422,7 @@ def DendroView(request,expname):
     labels = list(names)
     id2name = dict(zip(range(len(labels)), labels))
 
-# Create a nested dictionary from the ClusterNode's returned by SciPy
+    # Create a nested dictionary from the ClusterNode's returned by SciPy
     def add_node(node, parent ):
         # First create the new node and append it to its parent's children    
         newNode = dict( node_id=node.id, children=[] )
@@ -428,8 +446,8 @@ def DendroView(request,expname):
             # If not, flatten all the leaves in the node's subtree            
         else:
             leafNames = reduce(lambda x, y: x + label_tree(y), n["children"], [])
-            # Delete the node id since we don't need it anymore and
-            # it makes for cleaner JSON
+        # Delete the node id since we don't need it anymore and
+        # it makes for cleaner JSON
         del n["node_id"]
 
         #Labeling convention: "-"-separated leaf names
@@ -439,9 +457,8 @@ def DendroView(request,expname):
     
     label_tree( d3Dendro["children"][0] )
     
-# Output to JSON
+    # Output to JSON
     json.dump(d3Dendro, open("d3-dendrogram.json", "w"), sort_keys=True, indent=4)
-    exp.hclus = open("d3-dendrogram.json", "r")
     with open("d3-dendrogram.json",'r') as f:
         exp.hclus = json.load(f)
     exp.save()
@@ -450,6 +467,7 @@ def DendroView(request,expname):
         }
     return render(request, 'Dendrogram.html', context)    
 
+#Calculate z-score and ttest - determine differential prevalence of motifs  
 def ScoreView(request,expname):
         exp = Experiment.objects.get(experimentName = expname)
         files = FileDetail.objects.filter(experimentName = exp).filter(category__isnull=False)        
@@ -462,7 +480,7 @@ def ScoreView(request,expname):
         alpha_values = np.array(alp_vals)
         alpha_values /= alpha_values.sum(axis=1)[:,None]
         
-        #------CALCULATE MOTIF SCORE-------#
+        #Extract sample data categorization information
         category_seq =[]
         m_score=[]
         group1_index=[]
@@ -474,6 +492,8 @@ def ScoreView(request,expname):
             elif files.category =='1':
                 group2_index.append(i)
         alpha2= np.array(alpha_values.T,np.float)
+        
+        #------Calculate motif score and t-test-------#
         for i,alp in enumerate(alpha2):
                 a = np.array(alp) 
                 g1 = a[group1_index]  
@@ -482,8 +502,11 @@ def ScoreView(request,expname):
                 t, p = ttest_ind(g1, g2, equal_var=False)
                 m_score.append((i,zscore,t,p)) 
         s = np.array(m_score)
+        
+        #Sort on p-value
         sortm = np.array(sorted(m_score,key=itemgetter(3)))  
    
+        # FDR correction step - find out true values
         qval=[]
         score_list =[]
         for i in range(len(sortm)):
@@ -491,8 +514,10 @@ def ScoreView(request,expname):
             b = a/(i+1)
             score_list.append((sortm[i][0],sortm[i][1],sortm[i][2],sortm[i][3],b))
         
+        #Sort on motifs
         score = np.array(sorted(score_list,key=itemgetter(0))) 
         
+        #Save motif score, t_value, p_value and q_value in database
         i=0
         for m in motifs:
             m.z_score = score[i][1]
@@ -507,18 +532,3 @@ def ScoreView(request,expname):
         }
         
         return render(request, 'score.html', context)
-
-'''
-def register_page(request):
-    if request.method == 'POST':
-        form = forms.RegistrationForm(request.POST)
-        if form.is_valid():
-            user=User.objects.create_user(username=form.cleaned_data['username'],
-                                          password=form.cleaned_data['password1'],
-                                          email=form.cleaned_data['email'])
-            #user.save()
-            return HttpResponseRedirect('/')
-    form = forms.RegistrationForm()
-    variables = RequestContext(request, {'form': form})
-    return render_to_response('register.html',variables)    
-'''

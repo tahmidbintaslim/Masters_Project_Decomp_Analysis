@@ -1,5 +1,5 @@
-"""tango_with_django_project URL Configuration
-
+"""Referenced from tango with django book
+URL Configuration
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.9/topics/http/urls/
 Examples:
@@ -20,12 +20,10 @@ from django.contrib.auth import views as auth_views
 from django.conf.urls import include
 from django.views.generic.base import RedirectView
 from decomp import views
-#from decomp.forms import LoginForm
-
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'', include('decomp.urls',namespace="decomp")),
+    url(r'', include('decomp.urls',namespace="decomp")), 
    
 ]
 

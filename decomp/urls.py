@@ -1,6 +1,7 @@
 from django.conf.urls import url
 from . import views
 
+# Application Url patterns - connect to views
 urlpatterns =[
        
       url(r'^search/$', views.search, name='search'),  

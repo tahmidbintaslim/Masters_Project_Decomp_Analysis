@@ -6,17 +6,20 @@ import numpy as np
 import requests
 import re
 
+# Created an entry in Experiment table
 def populateExperiment(experimentName,description,resultId,filename): 
         experiment = Experiment.objects.get_or_create(experimentName = experimentName, description=description,
                                                   resultId = resultId,fileNames = filename)
-
+        
+# Create entries for each sample data provided in experiment form
 def populateFileDetail(experimentName,resultId,filename):
         experiment = Experiment.objects.get(experimentName=experimentName)
         res_id = re.split("\r\n|\n",str(experiment.resultId))
         filename = re.split("\r\n|\n",str(experiment.fileNames))
         for res_id,filename in zip(res_id,filename):
             FileDetail.objects.create(experimentName = experiment,resultId= res_id, fileName = filename)
-                
+
+# Populate motifs list             
 def populateMotifList(experimentName):
             experiment = Experiment.objects.get(experimentName=experimentName)
             file = FileDetail.objects.filter(experimentName=experiment)
@@ -39,7 +42,8 @@ def populateMotifList(experimentName):
                       MotifList.objects.create(MotifName = motif_list[i],experimentName = experiment,MotifId=i)
                 loadAnnotation(experiment,url2)
                 return True
-        
+
+# Create entries for motifs and thei prevalance values       
 def populateAlphaMatrix(experimentName):
         experiment = Experiment.objects.get(experimentName = experimentName)
         file = FileDetail.objects.filter(experimentName = experiment)
@@ -57,7 +61,8 @@ def populateAlphaMatrix(experimentName):
                 alp = AlphaTable.objects.get_or_create(mass2motif = motif,
                                          fileName = file, value = alpha_value[i][index])
                            
-    
+
+# Update motifs annotation details on motiflist table
 def loadAnnotation(experimentName,motifset):
     annotation = []  
     url ='http://ms2lda.org/decomposition/api/get_motifset_annotations/'
